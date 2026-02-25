@@ -1,0 +1,3072 @@
+{
+  "info": {
+    "_postman_id": "dfce51ea-cdff-4b09-a295-ce72bdca7d37",
+    "name": "ServerRestCompass",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "37924792"
+  },
+  "item": [
+    {
+      "name": "00 Happy Path (reconhecimento)",
+      "item": [
+        {
+          "name": "00 apagar tudo",
+          "item": [
+            {
+              "name": "Limpar Token Login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Se logar, salva o token para poder deletar as coisas\r",
+                      "// Se não logar (401), segue a vida (significa que o user já foi deletado)\r",
+                      "if (pm.response.code === 200) {\r",
+                      "    var jsonData = pm.response.json();\r",
+                      "    if (jsonData.authorization) {\r",
+                      "        var tokenLimpo = jsonData.authorization.split(' ')[1];\r",
+                      "        pm.collectionVariables.set(\"token\", tokenLimpo);\r",
+                      "        console.log(\"Token de limpeza obtido.\");\r",
+                      "    }\r",
+                      "} else {\r",
+                      "    console.log(\"Usuário não existe ou senha errada. Nada para limpar (Token).\");\r",
+                      "}\r",
+                      "// O teste sempre passa para não parar o Runner\r",
+                      "pm.test(\"Tentativa de Login de Limpeza\", function () {\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 401]);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{ \"email\": \"{{email_fixo}}\", \"password\": \"{{senha_fixa}}\" }",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Apagar Carrinho (Requires Token)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Limpeza Carrinho (Opcional)\", function () {\r",
+                      "    // Aceita 200 (deletou) ou 400/404/401 (não tinha nada lá)\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 404, 401]);\r",
+                      "});\r",
+                      "pm.collectionVariables.set(\"id_carrinho\", \"\"); // Limpa variável"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}carrinhos/cancelar-compra",
+                  "host": [
+                    "{{base_url}}carrinhos"
+                  ],
+                  "path": [
+                    "cancelar-compra"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Apagar Produtos",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Limpeza Produto (Opcional)\", function () {\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 404, 401,405]);\r",
+                      "});\r",
+                      "pm.collectionVariables.set(\"id_produto\", \"\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "packages": {},
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/produtos/{{id_produto}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "produtos",
+                    "{{id_produto}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Apagar Usuário",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Limpeza Usuário (Opcional)\", function () {\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 404, 405]);\r",
+                      "});\r",
+                      "pm.collectionVariables.set(\"id_usuario\", \"\");\r",
+                      "pm.collectionVariables.set(\"token\", \"\"); // Reseta o token para garantir"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/usuarios/{{id_usuario}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "usuarios",
+                    "{{id_usuario}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Criar tudo ADM",
+          "item": [
+            {
+              "name": "Criar usuario",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "//DADOS FIXOS\r",
+                      "pm.collectionVariables.set(\"nome_fixo\", \"Igor QA Master\");\r",
+                      "pm.collectionVariables.set(\"email_fixo\", \"igor.master.777@qa.com.br\");\r",
+                      "pm.collectionVariables.set(\"senha_fixa\", \"teste1234\");\r",
+                      "pm.collectionVariables.set(\"admin_fixo\", \"true\");\r",
+                      "\r",
+                      "pm.test(\"Usuário Cadastrado - Status 201\", function () {\r",
+                      "    pm.response.to.have.status(201);\r",
+                      "});\r",
+                      "\r",
+                      "var jsonData = pm.response.json();\r",
+                      "if (jsonData._id) {\r",
+                      "    pm.collectionVariables.set(\"id_usuario\", jsonData._id);\r",
+                      "    console.log(\"ID Usuário salvo: \" + jsonData._id);\r",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"{{nome_fixo}}\",\n  \"email\": \"{{email_fixo}}\",\n  \"password\": \"{{senha_fixa}}\",\n  \"administrador\": \"{{admin_fixo}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}usuarios",
+                  "host": [
+                    "{{base_url}}usuarios"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "Criar usuario",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "accept",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"nome\": \"{{nome_fixo}}\",\n  \"email\": \"{{email_fixo}}\",\n  \"password\": \"{{senha_fixa}}\",\n  \"administrador\": \"{{admin_fixo}}\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{base_url}}usuarios",
+                      "host": [
+                        "{{base_url}}usuarios"
+                      ]
+                    }
+                  },
+                  "status": "Created",
+                  "code": 201,
+                  "_postman_previewlanguage": null,
+                  "header": [
+                    {
+                      "key": "access-control-allow-origin",
+                      "value": "*"
+                    },
+                    {
+                      "key": "x-dns-prefetch-control",
+                      "value": "off"
+                    },
+                    {
+                      "key": "x-frame-options",
+                      "value": "SAMEORIGIN"
+                    },
+                    {
+                      "key": "strict-transport-security",
+                      "value": "max-age=15552000; includeSubDomains"
+                    },
+                    {
+                      "key": "x-download-options",
+                      "value": "noopen"
+                    },
+                    {
+                      "key": "x-content-type-options",
+                      "value": "nosniff"
+                    },
+                    {
+                      "key": "x-xss-protection",
+                      "value": "1; mode=block"
+                    },
+                    {
+                      "key": "content-type",
+                      "value": "application/json; charset=utf-8"
+                    },
+                    {
+                      "key": "x-cloud-trace-context",
+                      "value": "3c9272aa225123df57a0b6cb986a4bc2;o=1"
+                    },
+                    {
+                      "key": "date",
+                      "value": "Fri, 13 Feb 2026 12:25:21 GMT"
+                    },
+                    {
+                      "key": "server",
+                      "value": "Google Frontend"
+                    },
+                    {
+                      "key": "Content-Length",
+                      "value": "82"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n    \"message\": \"Cadastro realizado com sucesso\",\n    \"_id\": \"DwKZYvkKj65Psdsp\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "login",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code é 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});\r",
+                      "\r",
+                      "const jsonData = pm.response.json();\r",
+                      "if (jsonData.authorization) {\r",
+                      "    // split para retirar o Bearer do token de verdade\r",
+                      "    const tokenLimpo = jsonData.authorization.split(' ')[1];\r",
+                      "    \r",
+                      "    // Agora só o código, sem a palavra \"Bearer\" antes\r",
+                      "    pm.collectionVariables.set(\"token\", tokenLimpo);\r",
+                      "    console.log(\"Token salvo sem o prefixo Bearer.\");\r",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"email\": \"{{email_fixo}}\",\r\n  \"password\": \"{{senha_fixa}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}login",
+                  "host": [
+                    "{{base_url}}login"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "login",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\r\n  \"email\": \"{{email_fixo}}\",\r\n  \"password\": \"{{senha_fixa}}\"\r\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{base_url}}login",
+                      "host": [
+                        "{{base_url}}login"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": null,
+                  "header": [
+                    {
+                      "key": "access-control-allow-origin",
+                      "value": "*"
+                    },
+                    {
+                      "key": "x-dns-prefetch-control",
+                      "value": "off"
+                    },
+                    {
+                      "key": "x-frame-options",
+                      "value": "SAMEORIGIN"
+                    },
+                    {
+                      "key": "strict-transport-security",
+                      "value": "max-age=15552000; includeSubDomains"
+                    },
+                    {
+                      "key": "x-download-options",
+                      "value": "noopen"
+                    },
+                    {
+                      "key": "x-content-type-options",
+                      "value": "nosniff"
+                    },
+                    {
+                      "key": "x-xss-protection",
+                      "value": "1; mode=block"
+                    },
+                    {
+                      "key": "content-type",
+                      "value": "application/json; charset=utf-8"
+                    },
+                    {
+                      "key": "x-cloud-trace-context",
+                      "value": "ebe257eb592fc5e1e3e1e3c604b984a0"
+                    },
+                    {
+                      "key": "date",
+                      "value": "Fri, 13 Feb 2026 12:26:08 GMT"
+                    },
+                    {
+                      "key": "server",
+                      "value": "Google Frontend"
+                    },
+                    {
+                      "key": "Content-Length",
+                      "value": "295"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n    \"message\": \"Login realizado com sucesso\",\n    \"authorization\": \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imlnb3IubWFzdGVyNTQ1Nzc3Nzc0N0BxYS5jb20uYnIiLCJwYXNzd29yZCI6InRlc3RlMTIzNCIsImlhdCI6MTc3MDk4NTU2OCwiZXhwIjoxNzcwOTg2MTY4fQ.V2epo3qIF1ByhJdhyzzr2kMmow8gX0vHXjHP3wV9W8Y\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "Criar produto",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Gera um nome único usando a hora atual para nunca dar erro de duplicidade\r",
+                      "var nomeUnico = \"Notebook Gamer \" + Date.now(); \r",
+                      "pm.collectionVariables.set(\"nome_produto\", nomeUnico);\r",
+                      "console.log(\"Nome do produto gerado: \" + nomeUnico);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Produto Cadastrado - Status 201\", function () {\r",
+                      "    pm.response.to.have.status(201);\r",
+                      "});\r",
+                      "\r",
+                      "var jsonData = pm.response.json();\r",
+                      "if (jsonData._id) {\r",
+                      "    pm.collectionVariables.set(\"id_produto\", jsonData._id);\r",
+                      "    console.log(\"ID Produto salvo: \" + jsonData._id);\r",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"{{nome_produto}}\",\n  \"preco\": 470,\n  \"descricao\": \"Mouse\",\n  \"quantidade\": 381\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}produtos",
+                  "host": [
+                    "{{base_url}}produtos"
+                  ]
+                },
+                "description": "Duplo BEARER  \nA API ServeRest retorna o token no formato `Bearer eyJhbGci...`. Ao configurar a autenticação do Postman como **\"Bearer Token\"**, a ferramenta adiciona automaticamente o prefixo `\"Bearer \"` antes da variável.\n\n  \nAo implementar um script de tratamento na aba Scripts do Login para \"limpar\" o token antes de salvá-lo. Com o comando `.split(' ')[1]` para descartar a primeira palavra (\"Bearer\") e armazenar apenas o código hash (`eyJ...`)."
+              },
+              "response": []
+            },
+            {
+              "name": "Criar carrinho",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Carrinho Criado - Status 201\", function () {\r",
+                      "    pm.response.to.have.status(201);\r",
+                      "});\r",
+                      "\r",
+                      "var jsonData = pm.response.json();\r",
+                      "if (jsonData._id) {\r",
+                      "    pm.collectionVariables.set(\"id_carrinho\", jsonData._id);\r",
+                      "    console.log(\"ID Carrinho salvo: \" + jsonData._id);\r",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"produtos\": [\r\n    {\r\n      \"idProduto\": \"{{id_produto}}\",\r\n      \"quantidade\": 2\r\n    }\r\n  ]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}carrinhos",
+                  "host": [
+                    "{{base_url}}carrinhos"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Login",
+      "item": [
+        {
+          "name": "V - Verbs",
+          "item": [
+            {
+              "name": "CT-01 - Bloqueio de Verbo Não Suportado",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-01] VADER: Verbs - Validar Status 405 Method Not Allowed\", function () {\r",
+                      "    // O plano prevê status 405 para verbos não suportados [cite: 59]\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([405, 404]); // Algumas APIs retornam 404, mas 405 é o ideal\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "CT-01 - Bloqueio de Verbo Não Suportado Copy 1",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-01] VADER: Verbs - Validar Status 405 Method Not Allowed\", function () {\r",
+                      "    // O plano prevê status 405 para verbos não suportados [cite: 59]\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([405, 404]); // Algumas APIs retornam 404, mas 405 é o ideal\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "CT-01 - Bloqueio de Verbo Não Suportado Copy 2",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-01] VADER: Verbs - Validar Status 405 Method Not Allowed\", function () {\r",
+                      "    // O plano prevê status 405 para verbos não suportados [cite: 59]\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([405, 404]); // Algumas APIs retornam 404, mas 405 é o ideal\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "CT-02 - Segurança de Credenciais na URL",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-02] VADER: Verbs - Validar rejeição de GET no Login\", function () {\r",
+                      "    // Bloquear trafego de credenciais via URL. Espera-se 405 ou 400.\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([405, 400, 404]);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "R - Responsiveness",
+          "item": [
+            {
+              "name": "CT-13 - Performance do Login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1.Convertendo a variavel do postman para uma variavel do JavaScript\r",
+                      "const tempoLimite = Number(pm.collectionVariables.get(\"tempoDeResposta_ms\"));\r",
+                      "\r",
+                      "pm.test(`[CT-13] VADER: Responsiveness - Tempo de resposta < ${tempoLimite}ms`, function () {\r",
+                      "    // 2.  variável no JavaScript\r",
+                      "    pm.expect(pm.response.responseTime).to.be.below(tempoLimite);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Status code é 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"email\": \"{{email_fixo}}\",\r\n  \"password\": \"{{senha_fixa}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}login",
+                  "host": [
+                    "{{base_url}}login"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Usuários",
+      "item": [
+        {
+          "name": "D - DATA",
+          "item": [
+            {
+              "name": "CT-06 - Email Inválido",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-06] VADER: Data - Rejeitar email inválido (Status 400)\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Validar mensagem de erro no campo email\", function () {\r",
+                      "    const jsonData = pm.response.json();\r",
+                      "    // A API deve retornar algo indicando erro no email\r",
+                      "    pm.expect(JSON.stringify(jsonData)).to.include(\"email\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"nome\": \"Igor Teste Data\",\r\n  \"email\": \"email_invalido_sem_arroba.com\",\r\n  \"password\": \"teste\",\r\n  \"administrador\": \"true\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}usuarios",
+                  "host": [
+                    "{{base_url}}usuarios"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "CT-06 - nome Inválido Copy",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-06] VADER: Data - Rejeitar nome inválido (Status 400)\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "});\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"nome\": \" \",\r\n  \"email\": \"email_222222@teste.com\",\r\n  \"password\": \" \",\r\n  \"administrador\": \"true\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}usuarios",
+                  "host": [
+                    "{{base_url}}usuarios"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "CT-08 - Validação de Tipagem (Boolean)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-08] VADER: Data - Validar tipagem estrita (400)\", function () {\r",
+                      "    // Se a API espera string \"true\" e recebe boolean true, deve falhar\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"nome\": \"Igor Bool\",\r\n  \"email\": \"teste.bool@qa.com.br\",\r\n  \"password\": \"teste\",\r\n  \"administrador\": true\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}usuarios",
+                  "host": [
+                    "{{base_url}}usuarios"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "CT-09 - Payload Vazio",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-09] VADER: Data - Validar campos obrigatórios (400)\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "\r",
+                      "    const jsonData = pm.response.json();\r",
+                      "    // Validar se a API reclama dos campos faltantes\r",
+                      "    pm.expect(JSON.stringify(jsonData)).to.include(\"nome\");\r",
+                      "    pm.expect(JSON.stringify(jsonData)).to.include(\"email\");\r",
+                      "    pm.expect(JSON.stringify(jsonData)).to.include(\"password\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}usuarios",
+                  "host": [
+                    "{{base_url}}usuarios"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "description": "StartFragmentValidação de integridade, tipagem e obrigatoriedade dos dados.EndFragment"
+        },
+        {
+          "name": "E - Errors",
+          "item": [
+            {
+              "name": "CT-10 - Exclusão de ID Inexistente",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-10] VADER: Errors - Tratamento de recurso não encontrado\", function () {\r",
+                      "    // Aceita 200 (com aviso) ou 400/404\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);\r",
+                      "\r",
+                      "    if (pm.response.code === 200) {\r",
+                      "         pm.expect(pm.response.json().message).to.include(\"Nenhum registro excluído\");\r",
+                      "    }\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}usuarios/id_inexistente_999",
+                  "host": [
+                    "{{base_url}}usuarios"
+                  ],
+                  "path": [
+                    "id_inexistente_999"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "CT-11 - JSON errado",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-11] VADER: Errors - Validar Parse Error (400)\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{ \"nome\": \"JSON Quebrado\", \"email\": \"teste@qa.com\"",
+                  "options": {
+                    "raw": {
+                      "language": "text"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}usuarios",
+                  "host": [
+                    "{{base_url}}usuarios"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "CT-12 - Duplicidade de Email",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Valida o Status Code (Isso deve passar se for 400)\r",
+                      "pm.test(\"[CT-12] VADER: Errors - Bloquear email duplicado (400)\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "});\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"nome\": \"Igor Clone\",\r\n  \"email\": \"{{email_fixo}}\",\r\n  \"password\": \"teste\",\r\n  \"administrador\": \"true\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}usuarios",
+                  "host": [
+                    "{{base_url}}usuarios"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Produto",
+      "item": [
+        {
+          "name": "V - VERBS",
+          "item": [
+            {
+              "name": "CT-01 Bloqueio de Verbo Não Suportado em Produtos",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[VADER-V] Bloqueio de DELETE em massa\", function () {\r",
+                      "    // Aceitamos 405 (Method Not Allowed) ou 404 (Not Found)\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([405, 404, 403]);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}produtos",
+                  "host": [
+                    "{{base_url}}produtos"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "CT-01 Bloqueio de Verbo Não Suportado em Produtos Copy",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[VADER-V] Bloqueio de DELETE em massa\", function () {\r",
+                      "    // Aceitamos 405 (Method Not Allowed) ou 404 (Not Found)\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([405, 404, 403]);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}produtos",
+                  "host": [
+                    "{{base_url}}produtos"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "CT-01 Bloqueio de Verbo Não Suportado em Produtos Copy 2",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[VADER-V] Bloqueio de DELETE em massa\", function () {\r",
+                      "    // Aceitamos 405 (Method Not Allowed) ou 404 (Not Found)\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([405, 404, 403]);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}produtos",
+                  "host": [
+                    "{{base_url}}produtos"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "CT-01 Bloqueio de Verbo Não Suportado em Produtos Copy 3",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[VADER-V] Bloqueio de DELETE em massa\", function () {\r",
+                      "    // Aceitamos 405 (Method Not Allowed) ou 404 (Not Found)\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([405, 404, 403]);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"nome\": \"Produto Teste CT-08\",\r\n  \"preco\": \"cem reais\", \r\n  \"descricao\": \"Teste de Tipagem\",\r\n  \"quantidade\": 10\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}produtos",
+                  "host": [
+                    "{{base_url}}produtos"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "CT-01 Bloqueio de Verbo Não Suportado em Produtos Apagar com POST",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[VADER-V] Bloqueio de DELETE em massa\", function () {\r",
+                      "    // Aceitamos 405 (Method Not Allowed) ou 404 (Not Found)\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([405, 404, 403]);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}produtos/K6leHdftCeOJj8BJ",
+                  "host": [
+                    "{{base_url}}produtos"
+                  ],
+                  "path": [
+                    "K6leHdftCeOJj8BJ"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "D - DATA",
+          "item": [
+            {
+              "name": "CT-08 - Validação de Tipagem",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-08] VADER: Data - Validar rejeição de tipagem incorreta (400)\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "    pm.expect(pm.response.json().preco).to.include(\"deve ser um número\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"nome\": \"Produto Teste CT-08\",\r\n  \"preco\": \"cem reais\", \r\n  \"descricao\": \"Teste de Tipagem\",\r\n  \"quantidade\": 10\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}produtos",
+                  "host": [
+                    "{{base_url}}produtos"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "CT-08 - Validação de Tipagem Copy",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-08] VADER: Data - Validar rejeição de tipagem incorreta (400)\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "    pm.expect(pm.response.json().preco).to.include(\"deve ser um número\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"nome\": \"Produto Teste CT-082\",\r\n  \"preco\": \"10\", \r\n  \"descricao\": \"Teste de Tipagem\",\r\n  \"quantidade\": \"10\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}produtos",
+                  "host": [
+                    "{{base_url}}produtos"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "CT-08 - Validação de Tipagem Copy",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\r\n  \"nome\": \"Produto Teste CT-08\",\r\n  \"preco\": 10, \r\n  \"descricao\": \"Teste de Tipagem\",\r\n  \"quantidade\": \"10\"\r\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{base_url}}/produtos",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "produtos"
+                      ]
+                    }
+                  },
+                  "status": "Created",
+                  "code": 201,
+                  "_postman_previewlanguage": null,
+                  "header": [
+                    {
+                      "key": "access-control-allow-origin",
+                      "value": "*"
+                    },
+                    {
+                      "key": "x-dns-prefetch-control",
+                      "value": "off"
+                    },
+                    {
+                      "key": "x-frame-options",
+                      "value": "SAMEORIGIN"
+                    },
+                    {
+                      "key": "strict-transport-security",
+                      "value": "max-age=15552000; includeSubDomains"
+                    },
+                    {
+                      "key": "x-download-options",
+                      "value": "noopen"
+                    },
+                    {
+                      "key": "x-content-type-options",
+                      "value": "nosniff"
+                    },
+                    {
+                      "key": "x-xss-protection",
+                      "value": "1; mode=block"
+                    },
+                    {
+                      "key": "content-type",
+                      "value": "application/json; charset=utf-8"
+                    },
+                    {
+                      "key": "x-cloud-trace-context",
+                      "value": "05f149b652599298470ab2d7ce6a7532"
+                    },
+                    {
+                      "key": "date",
+                      "value": "Thu, 12 Feb 2026 21:10:22 GMT"
+                    },
+                    {
+                      "key": "server",
+                      "value": "Google Frontend"
+                    },
+                    {
+                      "key": "Content-Length",
+                      "value": "82"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n    \"message\": \"Cadastro realizado com sucesso\",\n    \"_id\": \"6GAbn1IKiumpfRZ9\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "CT-09 - Payload Vazio",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-09] VADER: Data - Validar campos obrigatórios (400)\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "    const json = pm.response.json();\r",
+                      "    // Verifica se reclama dos campos principais\r",
+                      "    pm.expect(JSON.stringify(json)).to.include(\"nome\");\r",
+                      "    pm.expect(JSON.stringify(json)).to.include(\"preco\");\r",
+                      "    pm.expect(JSON.stringify(json)).to.include(\"quantidade\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"nome\":\"\",\r\n  \"preco\": 0 ,\r\n  \"descricao\":\"\",\r\n  \"quantidade\": 0\r\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}produtos",
+                  "host": [
+                    "{{base_url}}produtos"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "E - ERRORS",
+          "item": [
+            {
+              "name": "CT-12 - Duplicidade de Nome de Produto",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-12] VADER: Errors - Bloquear produto duplicado (400)\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "    pm.expect(pm.response.json().message).to.include(\"Já existe produto com esse nome\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"{{nome_produto}}\",\n  \"preco\": 470,\n  \"descricao\": \"Mouse\",\n  \"quantidade\": 381\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}produtos",
+                  "host": [
+                    "{{base_url}}produtos"
+                  ]
+                },
+                "description": "Duplo BEARER  \nA API ServeRest retorna o token no formato `Bearer eyJhbGci...`. Ao configurar a autenticação do Postman como **\"Bearer Token\"**, a ferramenta adiciona automaticamente o prefixo `\"Bearer \"` antes da variável.\n\n  \nAo implementar um script de tratamento na aba Scripts do Login para \"limpar\" o token antes de salvá-lo. Com o comando `.split(' ')[1]` para descartar a primeira palavra (\"Bearer\") e armazenar apenas o código hash (`eyJ...`)."
+              },
+              "response": [
+                {
+                  "name": "Duplicidade de Nome de Produto",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "accept",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"nome\": \"{{nome_produto}}\",\n  \"preco\": 470,\n  \"descricao\": \"Mouse\",\n  \"quantidade\": 381\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{base_url}}produtos",
+                      "host": [
+                        "{{base_url}}produtos"
+                      ]
+                    }
+                  },
+                  "status": "Created",
+                  "code": 201,
+                  "_postman_previewlanguage": null,
+                  "header": [
+                    {
+                      "key": "access-control-allow-origin",
+                      "value": "*"
+                    },
+                    {
+                      "key": "x-dns-prefetch-control",
+                      "value": "off"
+                    },
+                    {
+                      "key": "x-frame-options",
+                      "value": "SAMEORIGIN"
+                    },
+                    {
+                      "key": "strict-transport-security",
+                      "value": "max-age=15552000; includeSubDomains"
+                    },
+                    {
+                      "key": "x-download-options",
+                      "value": "noopen"
+                    },
+                    {
+                      "key": "x-content-type-options",
+                      "value": "nosniff"
+                    },
+                    {
+                      "key": "x-xss-protection",
+                      "value": "1; mode=block"
+                    },
+                    {
+                      "key": "content-type",
+                      "value": "application/json; charset=utf-8"
+                    },
+                    {
+                      "key": "x-cloud-trace-context",
+                      "value": "c9dd44271f319eef76b4e0be6860754c"
+                    },
+                    {
+                      "key": "date",
+                      "value": "Fri, 13 Feb 2026 00:33:37 GMT"
+                    },
+                    {
+                      "key": "server",
+                      "value": "Google Frontend"
+                    },
+                    {
+                      "key": "Content-Length",
+                      "value": "82"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n    \"message\": \"Cadastro realizado com sucesso\",\n    \"_id\": \"gz0IYL93H2If9h9H\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "CT-10 Tratamento de recurso não encontrado",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-10] VADER: Errors - Tratamento de exclusão de existente!\", function () {\r",
+                      "    // O ServerRest geralmente retorna 200 informando que nada foi feito, ou 404.\r",
+                      "    // O importante é não dar erro 500.\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 400]);\r",
+                      "\r",
+                      "    if (pm.response.code === 200) {\r",
+                      "        pm.expect(pm.response.json().message).to.include(\"Nenhum registro excluído\");\r",
+                      "    }\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}produtos/id_que_nao_existe_999",
+                  "host": [
+                    "{{base_url}}produtos"
+                  ],
+                  "path": [
+                    "id_que_nao_existe_999"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "CT-10 Tratamento de recurso não encontrado (ID correto mas sem produto)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-10] VADER: Errors - Tratamento de exclusão de existente!\", function () {\r",
+                      "    // O ServerRest geralmente retorna 200 informando que nada foi feito, ou 404.\r",
+                      "    // O importante é não dar erro 500.\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 400]);\r",
+                      "\r",
+                      "    if (pm.response.code === 200) {\r",
+                      "        pm.expect(pm.response.json().message).to.include(\"Nenhum registro excluído\");\r",
+                      "    }\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}produtos/1111111111111111",
+                  "host": [
+                    "{{base_url}}produtos"
+                  ],
+                  "path": [
+                    "1111111111111111"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "CT-11 - Validar Parse Error",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-11] VADER: Errors - Validar Parse Error (400)\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "    // Algumas APIs retornam mensagem de erro de sintaxe\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"nome\": \"Produto Quebrado\",\r\n  \"preco\": 10",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}produtos",
+                  "host": [
+                    "{{base_url}}produtos"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "CT-11 - Validar Parse Error Copy",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-11] VADER: Errors - Validar Parse Error (400)\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "    // Algumas APIs retornam mensagem de erro de sintaxe\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"nome\": \"Produto Quebrado\",\r\n  \"preco\": 10,}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}produtos",
+                  "host": [
+                    "{{base_url}}produtos"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "CT-11 - Validar Parse Error Copy 2",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-11] VADER: Errors - Validar Parse Error (400)\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "    // Algumas APIs retornam mensagem de erro de sintaxe\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"nome\": \"Produto Quebrado\",\r\n  \"preco\": 10",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}produtos",
+                  "host": [
+                    "{{base_url}}produtos"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "R - Responsiveness",
+          "item": [
+            {
+              "name": "CT-13 - Performance/Tempo de Resposta",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const tempoLimite = Number(pm.collectionVariables.get(\"tempoDeResposta_ms\"));\r",
+                      "\r",
+                      "pm.test(`[CT-13] VADER: Responsiveness - Tempo de resposta < ${tempoLimite}ms`, function () {\r",
+                      "    // 2.  variável no JavaScript\r",
+                      "    pm.expect(pm.response.responseTime).to.be.below(tempoLimite);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Status code é 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}produtos",
+                  "host": [
+                    "{{base_url}}produtos"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Carrinhos",
+      "item": [
+        {
+          "name": "V - Verbs Copy 3",
+          "item": [
+            {
+              "name": "CT-01 - Bloqueio de Verbo Não Suportado",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-01] VADER: Verbs - Validar Status 405 Method Not Allowed\", function () {\r",
+                      "    // Aceita 405 (Method Not Allowed) ou 404 (Not Found) como fallback\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([405, 404]);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/carrinhos",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "carrinhos"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "CT-01 - Bloqueio de Verbo Não Suportado Copy",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-01] VADER: Verbs - Validar Status 405 Method Not Allowed\", function () {\r",
+                      "    // Aceita 405 (Method Not Allowed) ou 404 (Not Found) como fallback\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([405, 404]);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/carrinhos",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "carrinhos"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "D - DATA",
+          "item": [
+            {
+              "name": "CT-10 - Integridade de Dados / ID Inexistente",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-10] VADER: Data - Bloquear produto inexistente (400)\", function () {\r",
+                      "    pm.response.to.have.status(400,401,405);\r",
+                      "    pm.expect(pm.response.json().message).to.include(\"Produto não encontrado\");\r",
+                      "});\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// --- LIMPEZA PRÉVIA (FORCE CLEAN) ---\r",
+                      "// Garante que não existe nenhum carrinho aberto atrapalhando o teste\r",
+                      "const limparCarrinho = {\r",
+                      "    url: pm.collectionVariables.get(\"base_url\") + '/carrinhos/cancelar-compra',\r",
+                      "    method: 'DELETE',\r",
+                      "    header: { \r",
+                      "        'Authorization': 'Bearer ' + pm.collectionVariables.get(\"token\") \r",
+                      "    }\r",
+                      "};\r",
+                      "\r",
+                      "pm.sendRequest(limparCarrinho, (err, res) => {\r",
+                      "    console.log(\"Faxina: Carrinho anterior removido antes do teste CT-10.\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"produtos\": [\r\n    {\r\n      \"idProduto\": \"id_inexistente_123\", \r\n      \"quantidade\": 1\r\n    }\r\n  ]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/carrinhos",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "carrinhos"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "CT-10 - Integridade de Dados / ID Inexistente Copy",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[CT-10] VADER: Data - Bloquear produto inexistente (400)\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "    pm.expect(pm.response.json().message).to.include(\"Produto não encontrado\");\r",
+                      "});\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// --- LIMPEZA PRÉVIA (FORCE CLEAN) ---\r",
+                      "// Garante que não existe nenhum carrinho aberto atrapalhando o teste\r",
+                      "const limparCarrinho = {\r",
+                      "    url: pm.collectionVariables.get(\"base_url\") + '/carrinhos/cancelar-compra',\r",
+                      "    method: 'DELETE',\r",
+                      "    header: { \r",
+                      "        'Authorization': 'Bearer ' + pm.collectionVariables.get(\"token\") \r",
+                      "    }\r",
+                      "};\r",
+                      "\r",
+                      "pm.sendRequest(limparCarrinho, (err, res) => {\r",
+                      "    console.log(\"Faxina: Carrinho anterior removido antes do teste CT-10.\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"produtos\": [\r\n    {\r\n      \"idProduto\": \"id_inexistente_123\", \r\n      \"quantidade\": 1\r\n    }\r\n  ]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/carrinhos",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "carrinhos"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "CT-10 - Integridade de Dados / valor 0",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Regra de negócio: Carrinho com 0 itens não deve existir. Esperado: 400.\r",
+                      "\r",
+                      "if (pm.response.code === 201) {\r",
+                      "    pm.test(\"[BUG] API aceitou carrinho com quantidade 0\", function () {\r",
+                      "        pm.response.to.have.status(400);\r",
+                      "    });\r",
+                      "    pm.collectionVariables.set(\"id_carrinho\", pm.response.json()._id);\r",
+                      "} else {\r",
+                      "    pm.test(\"Validação de Quantidade Zero (Deve retornar 400)\", function () {\r",
+                      "        pm.response.to.have.status(400);\r",
+                      "    });\r",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// --- LIMPEZA PRÉVIA (FORCE CLEAN) ---\r",
+                      "// Garante que não existe nenhum carrinho aberto atrapalhando o teste\r",
+                      "const limparCarrinho = {\r",
+                      "    url: pm.collectionVariables.get(\"base_url\") + '/carrinhos/cancelar-compra',\r",
+                      "    method: 'DELETE',\r",
+                      "    header: { \r",
+                      "        'Authorization': 'Bearer ' + pm.collectionVariables.get(\"token\") \r",
+                      "    }\r",
+                      "};\r",
+                      "\r",
+                      "pm.sendRequest(limparCarrinho, (err, res) => {\r",
+                      "    console.log(\"Faxina: Carrinho anterior removido antes do teste CT-10.\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"produtos\": [\r\n    {\r\n      \"idProduto\": \"{{id_produto}}\",\r\n      \"quantidade\": 0\r\n    }\r\n  ]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/carrinhos",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "carrinhos"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "CT-10 - Integridade de Dados / valor negativo",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "\r",
+                      "if (pm.response.code === 201) {\r",
+                      "    // Se criou, marcamos como FALHA no teste (Bug encontrado)\r",
+                      "    pm.test(\"[BUG CRÍTICO] API aceitou quantidade negativa!\", function () {\r",
+                      "        pm.response.to.have.status(400); \r",
+                      "    });\r",
+                      "    // Salva o ID do carrinho para limpar depois, caso tenha criado errado\r",
+                      "    pm.collectionVariables.set(\"id_carrinho\", pm.response.json()._id);\r",
+                      "} else {\r",
+                      "    // Se rejeitou, o teste passa (Comportamento correto)\r",
+                      "    pm.test(\"Validação de Quantidade Negativa (Deve retornar 400)\", function () {\r",
+                      "        pm.response.to.have.status(400);\r",
+                      "    });\r",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// --- LIMPEZA PRÉVIA (FORCE CLEAN) ---\r",
+                      "// Garante que não existe nenhum carrinho aberto atrapalhando o teste\r",
+                      "const limparCarrinho = {\r",
+                      "    url: pm.collectionVariables.get(\"base_url\") + '/carrinhos/cancelar-compra',\r",
+                      "    method: 'DELETE',\r",
+                      "    header: { \r",
+                      "        'Authorization': 'Bearer ' + pm.collectionVariables.get(\"token\") \r",
+                      "    }\r",
+                      "};\r",
+                      "\r",
+                      "pm.sendRequest(limparCarrinho, (err, res) => {\r",
+                      "    console.log(\"Faxina: Carrinho anterior removido antes do teste CT-10.\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"produtos\": [\r\n    {\r\n      \"idProduto\": \"{{id_produto}}\",\r\n      \"quantidade\": -1\r\n    }\r\n  ]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/carrinhos",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "carrinhos"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "E - ERRORS",
+          "item": [
+            {
+              "name": "CT-12 - Regra de Unicidade",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"produtos\": [\r\n    {\r\n      \"idProduto\": \"{{id_produto_temp}}\",\r\n      \"quantidade\": 10\r\n    }\r\n  ]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/carrinhos",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "carrinhos"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "R - Responsiveness",
+          "item": [
+            {
+              "name": "CT-13 - Performance",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const tempoLimite = Number(pm.collectionVariables.get(\"tempoDeResposta_ms\"));\r",
+                      "\r",
+                      "pm.test(`[CT-13] VADER: Responsiveness - Tempo de resposta < ${tempoLimite}ms`, function () {\r",
+                      "    // 2.  variável no JavaScript\r",
+                      "    pm.expect(pm.response.responseTime).to.be.below(tempoLimite);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Status code é 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/carrinhos",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "carrinhos"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A - Authorization",
+      "item": [
+        {
+          "name": "Fluxo Admin",
+          "item": [
+            {
+              "name": "Cadastrar Admin Dinâmico",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.collectionVariables.set(\"email_admin_temp\", \"admin.\" + Date.now() + \"@qa.com.br\");\r",
+                      "pm.collectionVariables.set(\"pass_admin_temp\", \"teste123\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Admin criado (201)\", function () { pm.response.to.have.status(201); });"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"nome\": \"Admin Tester\",\r\n  \"email\": \"{{email_admin_temp}}\",\r\n  \"password\": \"{{pass_admin_temp}}\",\r\n  \"administrador\": \"true\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/usuarios",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "usuarios"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Login Admin",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Login Admin OK (200)\", function () { pm.response.to.have.status(200); });\r",
+                      "\r",
+                      "var json = pm.response.json();\r",
+                      "if (json.authorization) {\r",
+                      "    var tokenLimpo = json.authorization.split(' ')[1]; // Remove Bearer\r",
+                      "    pm.collectionVariables.set(\"token_admin\", tokenLimpo); // Salva em variável separada\r",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{ \"email\": \"{{email_admin_temp}}\", \"password\": \"{{pass_admin_temp}}\" }",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Criar Produto (Teste de Permissão)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Se der erro aqui, é BUG (Admin deveria conseguir)\r",
+                      "pm.test(\"[Auth] Admin conseguiu criar produto (201)\", function () {\r",
+                      "    pm.response.to.have.status(201);\r",
+                      "});\r",
+                      "// Salva ID para limpar depois\r",
+                      "pm.collectionVariables.set(\"id_produto_admin\", pm.response.json()._id);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_admin}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"nome\": \"Produto Admin {{email_admin_temp}}\", \r\n  \"preco\": 100,\r\n  \"descricao\": \"Teste de Permissão Admin\",\r\n  \"quantidade\": 100\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/produtos",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "produtos"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Excluir Produto",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Se der erro aqui, é BUG (Admin deveria conseguir)\r",
+                      "pm.test(\"[Auth] Admin conseguiu criar produto (200)\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});\r",
+                      "// Salva ID para limpar depois\r",
+                      "pm.collectionVariables.set(\"id_produto_admin\", pm.response.json()._id);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_admin}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/produtos/{{id_produto_admin}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "produtos",
+                    "{{id_produto_admin}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Fluxo Usuário Comum (Não Deve Ter Acesso)",
+          "item": [
+            {
+              "name": "Cadastrar Usuário Comum",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.collectionVariables.set(\"email_user_temp\", \"user.\" + Date.now() + \"@qa.com.br\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"nome\": \"User Tester\",\r\n  \"email\": \"{{email_user_temp}}\",\r\n  \"password\": \"teste\",\r\n  \"administrador\": \"false\" \r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/usuarios",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "usuarios"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Login Usuário Comum",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();\r",
+                      "if (json.authorization) {\r",
+                      "    var tokenLimpo = json.authorization.split(' ')[1];\r",
+                      "    pm.collectionVariables.set(\"token_user\", tokenLimpo); // Token restrito\r",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{ \"email\": \"{{email_user_temp}}\", \"password\": \"teste\" }",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Criar produto",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Lógica Invertida: Esperamos falha (403). Se der sucesso (201), o teste falha.\r",
+                      "\r",
+                      "if (pm.response.code === 403) {\r",
+                      "    pm.test(\"[SUCESSO] Segurança OK: Usuário Comum foi bloqueado (403)\", function () {\r",
+                      "        pm.response.to.have.status(403);\r",
+                      "    });\r",
+                      "    pm.test(\"Mensagem correta: Rota exclusiva\", function () {\r",
+                      "        pm.expect(pm.response.json().message).to.include(\"Rota exclusiva para administradores\");\r",
+                      "    });\r",
+                      "} else if (pm.response.code === 201) {\r",
+                      "    pm.test(\"[FALHA DE SEGURANÇA] Usuário Comum criou produto! (Bug Crítico)\", function () {\r",
+                      "        pm.response.to.have.status(403); // Força a falha\r",
+                      "    });\r",
+                      "    // Limpeza de emergência se o bug ocorrer\r",
+                      "    pm.collectionVariables.set(\"id_produto_bug\", pm.response.json()._id);\r",
+                      "} else {\r",
+                      "    pm.test(\"Retorno inesperado: \" + pm.response.code, function(){});\r",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_user}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"nome\": \"produto teste\", \r\n  \"preco\": 100,\r\n  \"descricao\": \"Teste de Permissão Admin\",\r\n  \"quantidade\": 100\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/produtos",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "produtos"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Criar produto Copy",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[SEGURANÇA] API deve ignorar parâmetros de admin no Body (403)\", function () {\r",
+                      "    pm.response.to.have.status(403);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_user}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"nome\": \"Produto Hack\",\r\n  \"preco\": 10,\r\n  \"descricao\": \"Tentando elevar privilegio via body\",\r\n  \"quantidade\": 10,\r\n  \"administrador\": \"true\",  \r\n  \"admin\": true,\r\n  \"role\": \"admin\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/produtos",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "produtos"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Criar produto  manipular header",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"[SEGURANÇA] API deve ignorar Headers falsos (403)\", function () {\r",
+                      "    pm.response.to.have.status(403);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_user}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-role",
+                    "value": "admin",
+                    "type": "text"
+                  },
+                  {
+                    "key": "role",
+                    "value": "admin",
+                    "type": "text"
+                  },
+                  {
+                    "key": "isAdmin",
+                    "value": "true",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"nome\": \"produto teste\", \r\n  \"preco\": 100,\r\n  \"descricao\": \"Teste de Permissão Admin\",\r\n  \"quantidade\": 100\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}produtos",
+                  "host": [
+                    "{{base_url}}produtos"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": ""
+    },
+    {
+      "key": "admin_fixo",
+      "value": ""
+    },
+    {
+      "key": "id_usuario",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "nome_produto",
+      "value": ""
+    },
+    {
+      "key": "id_produto",
+      "value": ""
+    },
+    {
+      "key": "id_carrinho",
+      "value": ""
+    },
+    {
+      "key": "tempoDeResposta_ms",
+      "value": "700"
+    },
+    {
+      "key": "id_produto_temp",
+      "value": ""
+    },
+    {
+      "key": "email_admin_temp",
+      "value": ""
+    },
+    {
+      "key": "pass_admin_temp",
+      "value": ""
+    },
+    {
+      "key": "token_admin",
+      "value": ""
+    },
+    {
+      "key": "id_produto_admin",
+      "value": ""
+    },
+    {
+      "key": "email_user_temp",
+      "value": ""
+    },
+    {
+      "key": "token_user",
+      "value": ""
+    },
+    {
+      "key": "id_produto_bug",
+      "value": ""
+    },
+    {
+      "key": "nome_fixo",
+      "value": ""
+    },
+    {
+      "key": "email_fixo",
+      "value": ""
+    },
+    {
+      "key": "senha_fixa",
+      "value": ""
+    }
+  ]
+}
