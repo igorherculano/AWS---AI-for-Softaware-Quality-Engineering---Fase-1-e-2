@@ -1,17 +1,33 @@
-print("1 - Soma")
-print("2 - Subtração")
-print("3 - Multiplicação")
-print("4 - Divisão")
-operacao = int(input("Digite o número da operação que deseja realizar: "))
+##Classes da operações
+def soma (parcela1, parcela2):
+    _validar_input(parcela1, parcela2)
+    return parcela1 + parcela2
 
-if operacao == 1:
-    num1 = float(input("Digite a primeira parcela da soma: "))
-    num2 = float(input("Digite a segunda parcela da soma: "))
-    soma = num1 + num2
-    print("A soma entre {} e {} é {}".format(num1, num2, soma))
+def subtracao (minuendo, subtraendo):
+    _validar_input(minuendo, subtraendo)
+    return minuendo - subtraendo
 
-elif operacao == 2:
-    num1 = float(input("Digite o minuendo  da diferença: "))
-    num2 = float(input("Digite o subtraendo da diferença: "))
-    diferenca = num1 - num2
-    print(f"A diferença entre {num1} e {num2} é {diferenca}")
+def multiplicacao (multiplicando, multiplicador):
+    _validar_input(multiplicando, multiplicador)
+    return multiplicando * multiplicador
+
+def divisao (dividendo, divisor):
+    _validar_input(dividendo, divisor)
+    if divisor == 0:
+        raise ZeroDivisionError("Divisão por zero não permitida")
+    return dividendo / divisor
+
+def potencia(base, expoente):
+    _validar_input(base, expoente)
+    return base ** expoente
+
+def porcentagem(percentual, base_calculo):
+    _validar_input(percentual, base_calculo)
+    return (percentual / 100) * base_calculo
+
+
+## Tratamento de erro
+def _validar_input(*args):
+    for arg in args:
+        if not isinstance(arg, (int, float)):
+            raise TypeError(f"Entrada inválida: {arg}")
