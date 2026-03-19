@@ -4,16 +4,21 @@ Library    String
 Library    Collections
 
 *** Variables ***
-${url}
+${URL}    https://compassuol.serverest.dev/
 ${EMAIL_TESTE}
 ${RESPOSTA}
+${RESPOSTA_ERRO}
 ${ID_USUARIO}
 ${TOKEN}
 ${NOME_PRODUTO}
 ${ID_PRODUTO}
 ${ID_CARRINHO}
+${VERBO}
 
 *** Keywords ***
+############      ############
+############ HP-01############
+############      ############
 Criar Usuario Novo Aleatorio
     ${palavra_aleatorio}    Generate Random String    length=4    chars=[LETTERS]
     ${palavra_aleatorio}    Convert To Lower Case    ${palavra_aleatorio}
@@ -37,10 +42,11 @@ Cadastrar Usuario ADM
     Log    ${resposta.json()}
 
     Set Test Variable    ${RESPOSTA}    ${resposta.json()}
+
 Criar Sessão na ServerRest
 
     ${headers}  Create Dictionary    accept=application/json    Content-Type=application/json
-    Create Session    alias=CompassServerRest    url=https://compassuol.serverest.dev/    headers=${headers}
+    Create Session    alias=CompassServerRest    url=${URL}    headers=${headers}
 
 Listar Usuario e verificar se deu certo
     Log    ${RESPOSTA}
@@ -108,7 +114,7 @@ Excluir Produto
     Dictionary Should Contain Item    ${resposta_del_prod.json()}    message    Registro excluído com sucesso
 
 Criar Carrinho Novo
-    # Como o produto anterior foi excluído na keyword de cima, precisamos de um novo produto para o carrinho não dar erro.
+    # Como o produto anterior foi excluído na keyword de cima, precisamos de um novo produto para continuar com os testes normalmente.
     Criar Produto Novo
     Cadastrar Produto
 
@@ -139,3 +145,39 @@ Excluir Carrinho
 Excluir Usuario
     ${resposta_del_user}    DELETE On Session    alias=CompassServerRest    url=usuarios/${ID_USUARIO}
     Dictionary Should Contain Item    ${resposta_del_user.json()}    message    Registro excluído com sucesso
+
+############             ############
+############ CT DE LOGIN ############
+############             ############
+*** Keywords ***
+Tentar realizar login com metodo ${VERBO}
+    Criar Sessão na ServerRest
+    Criar Usuario Novo Aleatorio
+    
+    # Mantendo a sua estrutura de dados com o email gerado aleatoriamente!
+    ${dados}    Create Dictionary    email=${EMAIL_TESTE}    password=teste
+                        #para GET é necessario o campo params
+    IF    '${VERBO}' == 'GET'
+        ${resposta_errada}    GET On Session    
+        ...    alias=CompassServerRest    
+        ...    url=login    
+        ...    params=${dados}    
+        ...    expected_status=any
+    ELSE
+        # Para PUT e DELETE é necessario o campo json
+        ${resposta_errada}    Run Keyword    ${VERBO} On Session    
+        ...    alias=CompassServerRest    
+        ...    url=login    
+        ...    json=${dados}    
+        ...    expected_status=any
+    END
+    
+    Set Test Variable    ${RESPOSTA_ERRO}    ${resposta_errada}
+
+Validar status code 405
+    # comparar se o status_code da resposta é exatamente 405
+    Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    405
+    
+    # Opcional, mas recomendado: Logar no console para a gente ver que funcionou
+    Log    Status code retornado: ${RESPOSTA_ERRO.status_code}
+
