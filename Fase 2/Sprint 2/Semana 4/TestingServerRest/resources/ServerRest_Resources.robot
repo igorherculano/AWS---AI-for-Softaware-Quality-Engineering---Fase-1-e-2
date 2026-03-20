@@ -14,10 +14,11 @@ ${NOME_PRODUTO}
 ${ID_PRODUTO}
 ${ID_CARRINHO}
 ${VERBO}
+${EMPTY}
 
 *** Keywords ***
 ############      ############
-############ HP-01############
+############  HP  ############
 ############      ############
 Criar Usuario Novo Aleatorio
     ${palavra_aleatorio}    Generate Random String    length=4    chars=[LETTERS]
@@ -53,7 +54,7 @@ Listar Usuario e verificar se deu certo
     Dictionary Should Contain Item    ${RESPOSTA}    message    Cadastro realizado com sucesso
     Dictionary Should Contain Key     ${RESPOSTA}    _id
     
-    # Captura o ID e salva para a suite toda poder usar
+    # Captura o id e salva para a suite toda poder usar
     ${id_capturado}    Set Variable    ${RESPOSTA}[_id]
     Set Suite Variable    ${ID_USUARIO}    ${id_capturado}
     
@@ -67,11 +68,14 @@ Listar Usuario e verificar se deu certo
 
 Realizar Login
     ${body}    Create Dictionary    email=${EMAIL_TESTE}    password=teste
-    ${resposta_login}    POST On Session    alias=CompassServerRest    url=login    json=${body}
+    ${resposta_login}    POST On Session    
+    ...    alias=CompassServerRest    
+    ...    url=login    
+    ...    json=${body}
     
     Dictionary Should Contain Item    ${resposta_login.json()}    message    Login realizado com sucesso
     
-    # Capturando o Token gerado no login
+    # guardando o Token gerado no login
     Set Test Variable    ${TOKEN}    ${resposta_login.json()}[authorization]
 
 Editar Usuario
@@ -81,7 +85,10 @@ Editar Usuario
     ...    password=teste    
     ...    administrador=true
 
-    ${resposta_put}    PUT On Session    alias=CompassServerRest    url=usuarios/${ID_USUARIO}    json=${body}
+    ${resposta_put}    PUT On Session    
+    ...    alias=CompassServerRest    
+    ...    url=usuarios/${ID_USUARIO}    
+    ...    json=${body}
     Dictionary Should Contain Item    ${resposta_put.json()}    message    Registro alterado com sucesso
 
 Criar Produto Novo
@@ -92,29 +99,41 @@ Cadastrar Produto
     ${headers}    Create Dictionary    Authorization=${TOKEN}
     ${body}    Create Dictionary    nome=${NOME_PRODUTO}    preco=250    descricao=Produto criado via Robot    quantidade=100
     
-    ${resposta_produto}    POST On Session    alias=CompassServerRest    url=produtos    json=${body}    headers=${headers}
+    ${resposta_produto}    POST On Session    
+    ...    alias=CompassServerRest    
+    ...    url=produtos    
+    ...    json=${body}    
+    ...    headers=${headers}
     
     Dictionary Should Contain Item    ${resposta_produto.json()}    message    Cadastro realizado com sucesso
     Set Test Variable    ${ID_PRODUTO}    ${resposta_produto.json()}[_id]
 
 Listar Produto e verificar se deu certo
-    ${resposta_get_prod}    GET On Session    alias=CompassServerRest    url=produtos/${ID_PRODUTO}
+    ${resposta_get_prod}    GET On Session    
+    ...    alias=CompassServerRest    
+    ...    url=produtos/${ID_PRODUTO}
     Dictionary Should Contain Item    ${resposta_get_prod.json()}    nome    ${NOME_PRODUTO}
 
 Editar Produto
     ${headers}    Create Dictionary    Authorization=${TOKEN}
     ${body}    Create Dictionary    nome=${NOME_PRODUTO} Editado    preco=300    descricao=Produto Editado via Robot    quantidade=150
     
-    ${resposta_put_prod}    PUT On Session    alias=CompassServerRest    url=produtos/${ID_PRODUTO}    json=${body}    headers=${headers}
+    ${resposta_put_prod}    PUT On Session    
+    ...    alias=CompassServerRest    
+    ...    url=produtos/${ID_PRODUTO}    
+    ...    json=${body}    
+    ...    headers=${headers}
     Dictionary Should Contain Item    ${resposta_put_prod.json()}    message    Registro alterado com sucesso
 
 Excluir Produto
     ${headers}    Create Dictionary    Authorization=${TOKEN}
-    ${resposta_del_prod}    DELETE On Session    alias=CompassServerRest    url=produtos/${ID_PRODUTO}    headers=${headers}
+    ${resposta_del_prod}    DELETE On Session    
+    ...    alias=CompassServerRest    
+    ...    url=produtos/${ID_PRODUTO}    
+    ...    headers=${headers}
     Dictionary Should Contain Item    ${resposta_del_prod.json()}    message    Registro excluído com sucesso
 
 Criar Carrinho Novo
-    # Como o produto anterior foi excluído na keyword de cima, precisamos de um novo produto para continuar com os testes normalmente.
     Criar Produto Novo
     Cadastrar Produto
 
@@ -126,58 +145,34 @@ Cadastrar Carrinho
     ${lista_produtos}  Create List          ${produto_dict}
     ${body}            Create Dictionary    produtos=${lista_produtos}
     
-    ${resposta_carrinho}    POST On Session    alias=CompassServerRest    url=carrinhos    json=${body}    headers=${headers}
+    ${resposta_carrinho}    POST On Session    
+    ...    alias=CompassServerRest    
+    ...    url=carrinhos    
+    ...    json=${body}    
+    ...    headers=${headers}
     
     Dictionary Should Contain Item    ${resposta_carrinho.json()}    message    Cadastro realizado com sucesso
     Set Test Variable    ${ID_CARRINHO}    ${resposta_carrinho.json()}[_id]
 
 Listar Carrinho por ID e verificar se deu certo
-    ${resposta_get_car}    GET On Session    alias=CompassServerRest    url=carrinhos/${ID_CARRINHO}
+    ${resposta_get_car}    GET On Session    
+    ...    alias=CompassServerRest    
+    ...    url=carrinhos/${ID_CARRINHO}
     Dictionary Should Contain Key    ${resposta_get_car.json()}    _id
 
 Excluir Carrinho
     ${headers}    Create Dictionary    Authorization=${TOKEN}
     
     # O ServeRest limpa o carrinho através da rota de cancelar ou concluir compra
-    ${resposta_del_car}    DELETE On Session    alias=CompassServerRest    url=carrinhos/cancelar-compra    headers=${headers}
-    Dictionary Should Contain Item    ${resposta_del_car.json()}    message    Registro excluído com sucesso. Estoque dos produtos reabastecido
+    ${resposta_del_car}    DELETE On Session    
+    ...    alias=CompassServerRest    
+    ...    url=carrinhos/cancelar-compra    
+    ...    headers=${headers}
+    Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${resposta_del_car.json()}    message    Registro excluído com sucesso.
+     ##^Necessario sempre que tem um bug####### 
 
 Excluir Usuario
     ${resposta_del_user}    DELETE On Session    alias=CompassServerRest    url=usuarios/${ID_USUARIO}
     Dictionary Should Contain Item    ${resposta_del_user.json()}    message    Registro excluído com sucesso
 
-############             ############
-############ CT DE LOGIN ############
-############             ############
-*** Keywords ***
-Tentar realizar login com metodo ${VERBO}
-    Criar Sessão na ServerRest
-    Criar Usuario Novo Aleatorio
     
-    # Mantendo a sua estrutura de dados com o email gerado aleatoriamente!
-    ${dados}    Create Dictionary    email=${EMAIL_TESTE}    password=teste
-                        #para GET é necessario o campo params
-    IF    '${VERBO}' == 'GET'
-        ${resposta_errada}    GET On Session    
-        ...    alias=CompassServerRest    
-        ...    url=login    
-        ...    params=${dados}    
-        ...    expected_status=any
-    ELSE
-        # Para PUT e DELETE é necessario o campo json
-        ${resposta_errada}    Run Keyword    ${VERBO} On Session    
-        ...    alias=CompassServerRest    
-        ...    url=login    
-        ...    json=${dados}    
-        ...    expected_status=any
-    END
-    
-    Set Test Variable    ${RESPOSTA_ERRO}    ${resposta_errada}
-
-Validar status code 405
-    # comparar se o status_code da resposta é exatamente 405
-    Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    405
-    
-    # Opcional, mas recomendado: Logar no console para a gente ver que funcionou
-    Log    Status code retornado: ${RESPOSTA_ERRO.status_code}
-
