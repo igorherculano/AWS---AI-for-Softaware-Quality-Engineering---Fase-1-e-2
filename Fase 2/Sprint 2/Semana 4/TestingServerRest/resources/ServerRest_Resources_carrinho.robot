@@ -19,9 +19,9 @@ Criar produto com estoque limitado
     Criar Usuario Novo Aleatorio
     Cadastrar Usuario ADM
     Realizar Login
-    ${palavra}    Generate Random String    8    [LETTERS]
+    Gerar Nome Produto Aleatorio
     ${body}    Create Dictionary
-    ...    nome=Item Limitado ${palavra}
+    ...    nome=${NOME_PRODUTO}
     ...    preco=50
     ...    descricao=Teclado
     ...    quantidade=2

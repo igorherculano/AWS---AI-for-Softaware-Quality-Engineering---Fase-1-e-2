@@ -15,15 +15,15 @@ Tentar cadastrar usuario com formato de email invalido
     Set Test Variable    ${RESPOSTA_ERRO}    ${resposta_errada}
 
 Tentar cadastrar usuario sem enviar a senha
-    ${palavra}    Generate Random String    8    [LETTERS]
-    ${body}    Create Dictionary    nome=User Sem Senha    email=teste${palavra}@qa.com    password=${EMPTY}    administrador=true
+    Gerar Email Aleatorio
+    ${body}    Create Dictionary    nome=User Sem Senha    email=${EMAIL_TESTE}    password=${EMPTY}    administrador=true
     ${resposta_errada}    POST On Session
     ...    alias=CompassServerRest    url=usuarios    json=${body}    expected_status=any
     Set Test Variable    ${RESPOSTA_ERRO}    ${resposta_errada}
 
 Tentar cadastrar usuario com nome e senha em branco
-    ${palavra}    Generate Random String    8    [LETTERS]
-    ${body}    Create Dictionary    nome=" "    email=teste${palavra}@qa.com    password=" "    administrador=true
+    Gerar Email Aleatorio
+    ${body}    Create Dictionary    nome=" "    email=${EMAIL_TESTE}    password=" "    administrador=true
     ${resposta_errada}    POST On Session
     ...    alias=CompassServerRest    url=usuarios    json=${body}    expected_status=any
     Set Test Variable    ${RESPOSTA_ERRO}    ${resposta_errada}

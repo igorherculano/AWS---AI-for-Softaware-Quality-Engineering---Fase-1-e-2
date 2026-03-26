@@ -11,13 +11,13 @@ Cadastrar Usuario Comum
     POST On Session    alias=CompassServerRest    url=usuarios    json=${body}
 
 Criar Payload de Produto Valido
-    ${palavra}    Generate Random String    8    [LETTERS]
-    ${body}    Create Dictionary    nome=Produto Valido ${palavra}    preco=${250}    descricao=Teclado    quantidade=${10}
+    Gerar Nome Produto Aleatorio
+    ${body}    Create Dictionary    nome=${NOME_PRODUTO}    preco=${250}    descricao=Teclado    quantidade=${10}
     Set Test Variable    ${BODY_PRODUTO}    ${body}
 
 Criar Payload de Produto com preco negativo
-    ${palavra}    Generate Random String    8    [LETTERS]
-    ${body}    Create Dictionary    nome=Produto Negativo ${palavra}    preco=${-50}    descricao=Teclado    quantidade=${10}
+    Gerar Nome Produto Aleatorio
+    ${body}    Create Dictionary    nome=${NOME_PRODUTO}    preco=${-50}    descricao=Teclado    quantidade=${10}
     Set Test Variable    ${BODY_PRODUTO}    ${body}
 
 Tentar cadastrar produto com usuario comum (nao administrador)

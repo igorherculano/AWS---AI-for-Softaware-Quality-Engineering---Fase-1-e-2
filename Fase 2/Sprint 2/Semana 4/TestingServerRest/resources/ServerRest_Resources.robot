@@ -1,7 +1,7 @@
 *** Settings ***
 Library    RequestsLibrary
-Library    String
 Library    Collections
+Library    FakerLibrary    locale=pt_BR
 
 *** Variables ***
 ${URL}              https://compassuol.serverest.dev/
@@ -20,19 +20,29 @@ Criar Sessão na ServerRest
     ${headers}    Create Dictionary    accept=application/json    Content-Type=application/json
     Create Session    alias=CompassServerRest    url=${URL}    headers=${headers}
 
+Gerar Email Aleatorio
+    ${email}    FakerLibrary.Email
+    Set Test Variable    ${EMAIL_TESTE}    ${email}
+
+Gerar Nome Aleatorio
+    ${nome}    FakerLibrary.Name
+    RETURN    ${nome}
+
+Gerar Nome Produto Aleatorio
+    ${nome}    FakerLibrary.Catch Phrase
+    Set Test Variable    ${NOME_PRODUTO}    ${nome}
+
 Criar Usuario Novo Aleatorio
-    ${palavra}    Generate Random String    length=4    chars=[LETTERS]
-    ${palavra}    Convert To Lower Case    ${palavra}
-    Set Test Variable    ${EMAIL_TESTE}    ${palavra}@teste.com
+    Gerar Email Aleatorio
 
 Cadastrar Usuario ADM
+    ${nome}    Gerar Nome Aleatorio
     ${body}    Create Dictionary
-    ...    nome=Fulano da Silva
+    ...    nome=${nome}
     ...    email=${EMAIL_TESTE}
     ...    password=teste
     ...    administrador=true
     ${resposta}    POST On Session    alias=CompassServerRest    url=usuarios    json=${body}
-    Log    ${resposta.json()}
     Set Test Variable    ${RESPOSTA}    ${resposta.json()}
 
 Listar Usuario e verificar se deu certo
@@ -40,7 +50,7 @@ Listar Usuario e verificar se deu certo
     Dictionary Should Contain Key     ${RESPOSTA}    _id
     Set Suite Variable    ${ID_USUARIO}    ${RESPOSTA}[_id]
     ${resposta_get}    GET On Session    alias=CompassServerRest    url=usuarios/${ID_USUARIO}
-    Dictionary Should Contain Item    ${resposta_get.json()}    nome    Fulano da Silva
+    Dictionary Should Contain Key    ${resposta_get.json()}    nome
 
 Realizar Login
     ${body}    Create Dictionary    email=${EMAIL_TESTE}    password=teste
@@ -49,8 +59,9 @@ Realizar Login
     Set Test Variable    ${TOKEN}    ${resposta_login.json()}[authorization]
 
 Editar Usuario
+    ${nome}    Gerar Nome Aleatorio
     ${body}    Create Dictionary
-    ...    nome=Fulano da Silva Editado
+    ...    nome=${nome} Editado
     ...    email=${EMAIL_TESTE}
     ...    password=teste
     ...    administrador=true
@@ -62,8 +73,7 @@ Excluir Usuario
     Dictionary Should Contain Item    ${resposta_del.json()}    message    Registro excluído com sucesso
 
 Criar Produto Novo
-    ${palavra}    Generate Random String    length=5    chars=[LETTERS]
-    Set Test Variable    ${NOME_PRODUTO}    Produto Automation ${palavra}
+    Gerar Nome Produto Aleatorio
 
 Cadastrar Produto
     ${headers}    Create Dictionary    Authorization=${TOKEN}
