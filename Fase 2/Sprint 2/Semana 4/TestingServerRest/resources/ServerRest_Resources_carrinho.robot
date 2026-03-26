@@ -1,41 +1,17 @@
 *** Settings ***
-Library    RequestsLibrary
-Library    String
-Library    Collections
 Resource    ServerRest_Resources.robot
 
 *** Variables ***
-${URL}    https://compassuol.serverest.dev/
-${EMAIL_TESTE}
-${RESPOSTA}
-${RESPOSTA_ERRO}
-${ID_USUARIO}
-${TOKEN}
-${NOME_PRODUTO}
-${ID_PRODUTO}
-${ID_CARRINHO}
-${VERBO}
-${EMPTY}
-${ID_PRODUTO_LIMITADO} 
+${ID_PRODUTO_LIMITADO}    ${EMPTY}
 
-
-*** Keywords ***
-############             ############
-############ CT CARRINHO ############
-############             ############
 *** Keywords ***
 Tentar cadastrar um segundo carrinho para o mesmo usuario
     ${produto}    Create Dictionary    idProduto=${ID_PRODUTO}    quantidade=1
     ${lista_produtos}    Create List    ${produto}
-    ${body_carrinho}    Create Dictionary    produtos=${lista_produtos}
+    ${body}    Create Dictionary    produtos=${lista_produtos}
     ${headers}    Create Dictionary    Authorization=${TOKEN}
-    
-    ${resposta_errada}    POST On Session    
-    ...    alias=CompassServerRest    
-    ...    url=carrinhos
-    ...    json=${body_carrinho}    
-    ...    headers=${headers}    
-    ...    expected_status=any
+    ${resposta_errada}    POST On Session
+    ...    alias=CompassServerRest    url=carrinhos    json=${body}    headers=${headers}    expected_status=any
     Set Test Variable    ${RESPOSTA_ERRO}    ${resposta_errada}
 
 Criar produto com estoque limitado
@@ -43,73 +19,49 @@ Criar produto com estoque limitado
     Criar Usuario Novo Aleatorio
     Cadastrar Usuario ADM
     Realizar Login
-    
-    ${EMAIL_TESTE}    Generate Random String    8    [LETTERS]
-    ${body_produto_limitado}    Create Dictionary    
-    ...    nome=Item Limitado ${EMAIL_TESTE}   
-    ...    preco=50    
-    ...    descricao=Teclado    
+    ${palavra}    Generate Random String    8    [LETTERS]
+    ${body}    Create Dictionary
+    ...    nome=Item Limitado ${palavra}
+    ...    preco=50
+    ...    descricao=Teclado
     ...    quantidade=2
     ${headers}    Create Dictionary    Authorization=${TOKEN}
-    
-    ${resposta_produto}    POST On Session    
-    ...    alias=CompassServerRest    
-    ...    url=produtos    
-    ...    json=${body_produto_limitado}    
-    ...    headers=${headers}
-    Set Test Variable    ${ID_PRODUTO_LIMITADO}    ${resposta_produto.json()}[_id]
+    ${resposta}    POST On Session
+    ...    alias=CompassServerRest    url=produtos    json=${body}    headers=${headers}
+    Set Test Variable    ${ID_PRODUTO_LIMITADO}    ${resposta.json()}[_id]
 
 Tentar cadastrar carrinho com quantidade maior que o estoque
     ${produto}    Create Dictionary    idProduto=${ID_PRODUTO_LIMITADO}    quantidade=5
     ${lista_produtos}    Create List    ${produto}
-    ${body_carrinho}    Create Dictionary    produtos=${lista_produtos}
+    ${body}    Create Dictionary    produtos=${lista_produtos}
     ${headers}    Create Dictionary    Authorization=${TOKEN}
-    
-    ${resposta_errada}    POST On Session    
-    ...    alias=CompassServerRest    
-    ...    url=carrinhos    
-    ...    json=${body_carrinho}    
-    ...    headers=${headers}    
-    ...    expected_status=any
+    ${resposta_errada}    POST On Session
+    ...    alias=CompassServerRest    url=carrinhos    json=${body}    headers=${headers}    expected_status=any
     Set Test Variable    ${RESPOSTA_ERRO}    ${resposta_errada}
 
 Tentar cadastrar carrinho com o mesmo ID de produto duplicado
     ${produto_1}    Create Dictionary    idProduto=${ID_PRODUTO}    quantidade=1
     ${produto_2}    Create Dictionary    idProduto=${ID_PRODUTO}    quantidade=2
     ${lista_produtos}    Create List    ${produto_1}    ${produto_2}
-    ${body_carrinho}    Create Dictionary    produtos=${lista_produtos}
+    ${body}    Create Dictionary    produtos=${lista_produtos}
     ${headers}    Create Dictionary    Authorization=${TOKEN}
-    
-    ${resposta_errada}    POST On Session    
-    ...    alias=CompassServerRest    
-    ...    url=carrinhos    
-    ...    json=${body_carrinho}    
-    ...    headers=${headers}    
-    ...    expected_status=any
+    ${resposta_errada}    POST On Session
+    ...    alias=CompassServerRest    url=carrinhos    json=${body}    headers=${headers}    expected_status=any
     Set Test Variable    ${RESPOSTA_ERRO}    ${resposta_errada}
 
 Tentar cadastrar carrinho sem enviar Token de autorizacao
     ${produto}    Create Dictionary    idProduto=qualquer_id_falso    quantidade=1
     ${lista_produtos}    Create List    ${produto}
-    ${body_carrinho}    Create Dictionary    produtos=${lista_produtos}
-    
-    ${resposta_errada}    POST On Session    
-    ...    alias=CompassServerRest    
-    ...    url=carrinhos    
-    ...    json=${body_carrinho}    
-    ...    expected_status=any
+    ${body}    Create Dictionary    produtos=${lista_produtos}
+    ${resposta_errada}    POST On Session
+    ...    alias=CompassServerRest    url=carrinhos    json=${body}    expected_status=any
     Set Test Variable    ${RESPOSTA_ERRO}    ${resposta_errada}
 
 Concluir a compra do carrinho
     ${headers}    Create Dictionary    Authorization=${TOKEN}
-    ${resposta_sucesso}    DELETE On Session    
-    ...    alias=CompassServerRest    
-    ...    url=carrinhos/concluir-compra    
-    ...    headers=${headers}
-    Set Test Variable    ${RESPOSTA}    ${resposta_sucesso}
-
-
-############## TRATAMENTO DE ERROS ##############
+    ${resposta}    DELETE On Session
+    ...    alias=CompassServerRest    url=carrinhos/concluir-compra    headers=${headers}
+    Set Test Variable    ${RESPOSTA}    ${resposta}
 
 Validar status code 400 e mensagem de limite de carrinho
     Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    400
