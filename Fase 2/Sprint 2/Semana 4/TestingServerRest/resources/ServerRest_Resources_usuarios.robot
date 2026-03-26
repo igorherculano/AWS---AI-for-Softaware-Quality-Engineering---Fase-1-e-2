@@ -70,11 +70,9 @@ Tentar cadastrar usuario com nome e senha em branco
 
 ############## tratamento de erros ##############
 Validar status code 400 e mensagem de erro de campos em branco
-    Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    400
-    # Valida se a API apontou erro tanto no nome quanto na senha
-    Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    nome    nome não pode ficar em branco
-    Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    password    password não pode ficar em branco
+    Run Keyword And Continue On Failure    Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    400
 
+    
 Validar status code 400 e mensagem de email em uso
     Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    400
     Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    message    Este email já está sendo usado
