@@ -1,6 +1,6 @@
 *** Settings ***
 Documentation    Essa suite testa o site compassuol.serverest.dev
-Resource    ../TestingServerRest/resources/ServerRest_Resources.robot
+Resource    ../TestingServerRestCF/resources/ServerRest_Resources.robot
     
 
 *** Test Cases ***
