@@ -1,0 +1,46 @@
+# Workflow de CI para execução automática dos testes Robot Framework
+# Acionado a cada push e pull_request no repositório
+
+name: Robot Framework CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  robot-tests:
+    name: Executar Testes Robot Framework
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout do código do repositório
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      # 2. Configuração do Python
+      - name: Configurar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # 3. Instalação das dependências via requirements.txt
+      - name: Instalar dependências
+        run: pip install -r "Fase 2/Sprint 4/Semana 8/TestingServerRestCF/requirements.txt"
+
+      # 4. Execução da suíte de testes — pipeline falha automaticamente se algum teste falhar
+      - name: Executar testes Robot Framework
+        run: |
+          robot \
+            --outputdir results/ \
+            "Fase 2/Sprint 4/Semana 8/TestingServerRestCF/"
+
+      # 5. Publicação dos artefatos de evidência (sempre executado, mesmo em falha)
+      - name: Publicar evidências de execução
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: robot-results
+          path: |
+            results/log.html
+            results/report.html
+            results/output.xml
