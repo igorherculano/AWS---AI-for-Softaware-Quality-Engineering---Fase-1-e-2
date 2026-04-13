@@ -65,23 +65,33 @@ Concluir a compra do carrinho
 
 Validar status code 400 e mensagem de limite de carrinho
     Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    400
+    ...    msg=Sad Path: POST /carrinhos deve retornar status 400 ao tentar criar segundo carrinho para mesmo usuário (limite de 1 carrinho ativo)
     Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    message    Não é permitido ter mais de 1 carrinho
+    ...    msg=Regra de negócio: Sistema permite apenas 1 carrinho ativo por usuário
 
 Validar status code 400 e mensagem de estoque insuficiente
     Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    400
+    ...    msg=Sad Path: POST /carrinhos deve retornar status 400 ao tentar adicionar quantidade maior que estoque disponível (validação de limite)
     Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    message    Produto não possui quantidade suficiente
+    ...    msg=Regra de negócio: API valida disponibilidade de estoque antes de adicionar produto ao carrinho
 
 Validar status code 400 e mensagem de produto duplicado
     Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    400
+    ...    msg=Sad Path: POST /carrinhos deve retornar status 400 ao enviar mesmo ID de produto duplicado no payload (validação de estrutura)
     Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    message    Não é permitido possuir produto duplicado
+    ...    msg=Regra de negócio: Para aumentar quantidade, deve-se alterar o campo 'quantidade', não duplicar o ID do produto
 
 Validar status code 401 e mensagem de token ausente
     Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    401
+    ...    msg=Sad Path: POST /carrinhos deve retornar status 401 ao tentar criar carrinho sem token JWT (barreira de autenticação)
     Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    message    Token de acesso ausente, inválido, expirado ou usuário do token não existe mais
+    ...    msg=Regra de segurança: API exige autenticação válida para operações com carrinho
 
 Validar status code 200 e exclusao bem sucedida
     Should Be Equal As Integers    ${RESPOSTA.status_code}    200
+    ...    msg=Happy Path: DELETE /carrinhos/concluir-compra ou /cancelar-compra deve retornar status 200 ao finalizar operação
     Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA.json()}    message    Registro excluído com sucesso
+    ...    msg=Regra de negócio: API deve confirmar exclusão do carrinho após conclusão ou cancelamento da compra
 
 Cancelar a compra do carrinho
     ${headers}    Create Dictionary    Authorization=${TOKEN}

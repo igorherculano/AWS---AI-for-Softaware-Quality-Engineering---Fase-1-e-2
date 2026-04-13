@@ -51,18 +51,24 @@ Tentar realizar login com usuario nao cadastrado
 
 Validar status code 405
     Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    405
+    ...    msg=Sad Path: Rota /login deve retornar status 405 para verbos HTTP não suportados (proteção de segurança)
 
 Validar status code 401 e mensagem de erro de email
     Run Keyword And Continue On Failure    Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    401
+    ...    msg=Sad Path: POST /login deve retornar status 401 para email com formato inválido (validação de entrada)
     Log    Status code retornado: ${RESPOSTA_ERRO.status_code}
 
 Validar status code 400 e mensagem de erro de senha vazia
     Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    400
+    ...    msg=Sad Path: POST /login deve retornar status 400 para senha vazia (validação de campo obrigatório)
     Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    password    password não pode ficar em branco
+    ...    msg=Regra de negócio: Campo password é obrigatório e não pode ser vazio
 
 Validar status code: 401 Email e/ou senha inválidos
     Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    401
+    ...    msg=Sad Path: POST /login deve retornar status 401 para credenciais incorretas ou usuário inexistente (barreira de autenticação)
     Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    message    Email e/ou senha inválidos
+    ...    msg=Regra de segurança: API retorna mensagem genérica para não expor se email existe ou não
     Log    Status code retornado: ${RESPOSTA_ERRO.status_code}
 
 Tentar realizar login com payload vazio
@@ -74,5 +80,8 @@ Tentar realizar login com payload vazio
 
 Validar status code 400 e mensagem de campos obrigatorios
     Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    400
+    ...    msg=Sad Path: POST /login deve retornar status 400 para payload vazio (validação de campos obrigatórios)
     Dictionary Should Contain Key    ${RESPOSTA_ERRO.json()}    email
+    ...    msg=Contrato da API: Resposta de erro deve indicar que campo email é obrigatório
     Dictionary Should Contain Key    ${RESPOSTA_ERRO.json()}    password
+    ...    msg=Contrato da API: Resposta de erro deve indicar que campo password é obrigatório

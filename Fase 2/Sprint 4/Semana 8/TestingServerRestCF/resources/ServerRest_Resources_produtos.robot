@@ -47,19 +47,27 @@ Tentar cadastrar produto sem enviar Token
 
 Validar status code 403 e mensagem de rota exclusiva para administradores
     Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    403
+    ...    msg=Sad Path: POST /produtos deve retornar status 403 para usuário comum sem permissão (controle de acesso RBAC)
     Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    message    Rota exclusiva para administradores
+    ...    msg=Regra de negócio: Apenas usuários com administrador=true podem criar produtos
 
 Validar status code 400 e mensagem de produto duplicado
     Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    400
+    ...    msg=Sad Path: POST /produtos deve retornar status 400 ao tentar cadastrar nome duplicado (bloqueio de unicidade)
     Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    message    Já existe produto com esse nome
+    ...    msg=Regra de negócio: API não permite cadastrar dois produtos com o mesmo nome
 
 Validar status code 400 e mensagem de erro de preco invalido
     Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    400
+    ...    msg=Sad Path: POST /produtos deve retornar status 400 para preço negativo (sanitização de dados)
     Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    preco    preco deve ser um número positivo
+    ...    msg=Regra de negócio: Campo preço deve ser um número inteiro maior ou igual a 1
 
 Validar status code 401 e mensagem de token ausente
     Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    401
+    ...    msg=Sad Path: POST /produtos deve retornar status 401 ao tentar cadastrar sem token JWT (barreira de autenticação)
     Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    message    Token de acesso ausente, inválido, expirado ou usuário do token não existe mais
+    ...    msg=Regra de segurança: API exige autenticação válida para manipulação de produtos
 
 Criar Carrinho Novo Com Produto Existente
     ${produto_dict}    Create Dictionary    idProduto=${ID_PRODUTO}    quantidade=2
@@ -75,4 +83,6 @@ Tentar excluir produto vinculado a carrinho
 
 Validar status code 400 e mensagem de produto em carrinho
     Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    400
+    ...    msg=Sad Path: DELETE /produtos/{_id} deve retornar status 400 ao tentar excluir produto vinculado a carrinho (proteção de integridade)
     Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    message    Não é permitido excluir produto que faz parte de carrinho
+    ...    msg=Regra de negócio: API bloqueia exclusão de produtos que estão em carrinhos ativos
