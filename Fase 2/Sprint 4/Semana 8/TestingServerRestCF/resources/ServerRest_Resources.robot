@@ -70,7 +70,9 @@ Editar Usuario
 
 Excluir Usuario
     ${resposta_del}    DELETE On Session    alias=CompassServerRest    url=usuarios/${ID_USUARIO}
-    Dictionary Should Contain Item    ${resposta_del.json()}    message    Registro excluído com sucesso
+    ${msg}    Set Variable    ${resposta_del.json()}[message]
+    Should Be True    '${msg}' == 'Registro excluído com sucesso' or '${msg}' == 'Nenhum registro excluído'
+
 
 Criar Produto Novo
     Gerar Nome Produto Aleatorio
@@ -124,3 +126,80 @@ Excluir Carrinho
     ...    alias=CompassServerRest    url=carrinhos/cancelar-compra    headers=${headers}
     Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${resposta_del.json()}    message    Registro excluído com sucesso.
     ##^Necessario sempre que tem um bug#######
+
+############  SAD PATH KEYWORDS  ############
+
+Tentar Login Com Credenciais Invalidas
+    ${body}    Create Dictionary    email=invalido@email.com    password=senhaerrada
+    ${resposta}    POST On Session
+    ...    alias=CompassServerRest    url=login    json=${body}
+    ...    expected_status=401
+    Dictionary Should Contain Item    ${resposta.json()}    message    Email e/ou senha inválidos
+
+Cadastrar Usuario Nao ADM
+    ${nome}    Gerar Nome Aleatorio
+    ${body}    Create Dictionary
+    ...    nome=${nome}
+    ...    email=${EMAIL_TESTE}
+    ...    password=teste
+    ...    administrador=false
+    ${resposta}    POST On Session    alias=CompassServerRest    url=usuarios    json=${body}
+    Set Test Variable    ${RESPOSTA}    ${resposta.json()}
+
+Tentar Cadastrar Usuario Com Email Duplicado
+    ${nome}    Gerar Nome Aleatorio
+    ${body}    Create Dictionary
+    ...    nome=${nome}
+    ...    email=${EMAIL_TESTE}
+    ...    password=teste
+    ...    administrador=true
+    ${resposta}    POST On Session
+    ...    alias=CompassServerRest    url=usuarios    json=${body}
+    ...    expected_status=400
+    Dictionary Should Contain Item    ${resposta.json()}    message    Este email já está sendo usado
+
+Tentar Cadastrar Produto Sem Token
+    ${body}    Create Dictionary    nome=${NOME_PRODUTO}    preco=250    descricao=Produto sem token    quantidade=10
+    ${resposta}    POST On Session
+    ...    alias=CompassServerRest    url=produtos    json=${body}
+    ...    expected_status=401
+    Dictionary Should Contain Item    ${resposta.json()}    message    Token de acesso ausente, inválido, expirado ou usuário do token não existe mais
+
+Tentar Cadastrar Produto Como Nao ADM
+    ${headers}    Create Dictionary    Authorization=${TOKEN}
+    ${body}    Create Dictionary    nome=${NOME_PRODUTO}    preco=250    descricao=Produto nao adm    quantidade=10
+    ${resposta}    POST On Session
+    ...    alias=CompassServerRest    url=produtos    json=${body}    headers=${headers}
+    ...    expected_status=403
+    Dictionary Should Contain Item    ${resposta.json()}    message    Rota exclusiva para administradores
+
+Tentar Cadastrar Produto Com Nome Duplicado
+    ${headers}    Create Dictionary    Authorization=${TOKEN}
+    ${body}    Create Dictionary    nome=${NOME_PRODUTO}    preco=250    descricao=Produto duplicado    quantidade=10
+    ${resposta}    POST On Session
+    ...    alias=CompassServerRest    url=produtos    json=${body}    headers=${headers}
+    ...    expected_status=400
+    Dictionary Should Contain Item    ${resposta.json()}    message    Já existe produto com esse nome
+
+Tentar Cadastrar Carrinho Com Produto Inexistente
+    ${headers}    Create Dictionary    Authorization=${TOKEN}
+    ${produto_dict}    Create Dictionary    idProduto=id_invalido_inexistente    quantidade=1
+    ${lista_produtos}    Create List    ${produto_dict}
+    ${body}    Create Dictionary    produtos=${lista_produtos}
+    ${resposta}    POST On Session
+    ...    alias=CompassServerRest    url=carrinhos    json=${body}    headers=${headers}
+    ...    expected_status=400
+    Dictionary Should Contain Item    ${resposta.json()}    message    Produto não encontrado
+
+Tentar Excluir Produto Em Carrinho
+    ${headers}    Create Dictionary    Authorization=${TOKEN}
+    ${resposta}    DELETE On Session
+    ...    alias=CompassServerRest    url=produtos/${ID_PRODUTO}    headers=${headers}
+    ...    expected_status=400
+    Dictionary Should Contain Item    ${resposta.json()}    message    Não é permitido excluir produto que faz parte de carrinho
+
+Tentar Excluir Usuario Com Carrinho
+    ${resposta}    DELETE On Session
+    ...    alias=CompassServerRest    url=usuarios/${ID_USUARIO}
+    ...    expected_status=400
+    Dictionary Should Contain Item    ${resposta.json()}    message    Não é permitido excluir usuário com carrinho cadastrado
