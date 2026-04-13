@@ -40,4 +40,16 @@ CT-04 Validar sanitizacao de campos em branco no cadastro (Bug-02)
 
     Criar Sessão na ServerRest
     Tentar cadastrar usuario com nome e senha em branco
-    Validar status code 400 e mensagem de erro de campos em branco
+    Validar status code 400 e mensagem de erro de campos em branco    #bug documentado
+
+CT-05 Validar fluxo funcional (CRUD) do modulo de Usuarios
+    [Documentation]    Realizar o ciclo de vida completo do Happy Path.
+    ...                Resultado esperado: Status 201 e 200.
+    [Tags]    usuarios    lifecycle    funcional
+
+    Criar Sessão na ServerRest
+    Criar Usuario Novo Aleatorio
+    Cadastrar Usuario ADM
+    Listar Usuario e verificar se deu certo
+    Editar Usuario
+    Excluir Usuario

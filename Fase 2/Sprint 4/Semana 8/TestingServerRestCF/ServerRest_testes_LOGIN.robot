@@ -45,3 +45,11 @@ CT-03 Validar barreira de autenticação com credenciais invalidas e inexistente
     # Passo 2: Usuário não existe
     Tentar realizar login com usuario nao cadastrado
     Validar status code: 401 Email e/ou senha inválidos
+
+CT-04 Validar contrato de entrada com payload vazio ou incompleto
+    [Documentation]    Verificar se a API valida campos obrigatórios antes de processar autenticação.
+    ...                Resultado esperado: Status 400 Bad Request.
+    [Tags]    login    data    errors
+
+    Tentar realizar login com payload vazio
+    Validar status code 400 e mensagem de campos obrigatorios

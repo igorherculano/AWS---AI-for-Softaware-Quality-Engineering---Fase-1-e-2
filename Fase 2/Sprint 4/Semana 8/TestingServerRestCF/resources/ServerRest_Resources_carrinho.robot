@@ -82,3 +82,9 @@ Validar status code 401 e mensagem de token ausente
 Validar status code 200 e exclusao bem sucedida
     Should Be Equal As Integers    ${RESPOSTA.status_code}    200
     Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA.json()}    message    Registro excluído com sucesso
+
+Cancelar a compra do carrinho
+    ${headers}    Create Dictionary    Authorization=${TOKEN}
+    ${resposta}    DELETE On Session
+    ...    alias=CompassServerRest    url=carrinhos/cancelar-compra    headers=${headers}
+    Set Test Variable    ${RESPOSTA}    ${resposta}

@@ -64,3 +64,15 @@ Validar status code: 401 Email e/ou senha inválidos
     Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    401
     Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    message    Email e/ou senha inválidos
     Log    Status code retornado: ${RESPOSTA_ERRO.status_code}
+
+Tentar realizar login com payload vazio
+    Criar Sessão na ServerRest
+    ${body}    Create Dictionary
+    ${resposta_errada}    POST On Session
+    ...    alias=CompassServerRest    url=login    json=${body}    expected_status=any
+    Set Test Variable    ${RESPOSTA_ERRO}    ${resposta_errada}
+
+Validar status code 400 e mensagem de campos obrigatorios
+    Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    400
+    Dictionary Should Contain Key    ${RESPOSTA_ERRO.json()}    email
+    Dictionary Should Contain Key    ${RESPOSTA_ERRO.json()}    password

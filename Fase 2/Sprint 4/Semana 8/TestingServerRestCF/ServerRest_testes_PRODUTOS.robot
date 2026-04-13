@@ -67,3 +67,19 @@ CT-05 Validar fluxo funcional (CRUD) do modulo de Produtos
     Listar Produto e verificar se deu certo
     Editar Produto
     Excluir Produto
+
+CT-06 Validar bloqueio de exclusao de produto vinculado a carrinho
+    [Documentation]    Tentar excluir produto que faz parte de um carrinho ativo.
+    ...                Resultado esperado: Status 400 Não é permitido excluir produto que faz parte de carrinho.
+    [Tags]    produto    carrinho    business_rule    errors
+
+    Criar Sessão na ServerRest
+    Criar Usuario Novo Aleatorio
+    Cadastrar Usuario ADM
+    Realizar Login
+    Criar Produto Novo
+    Cadastrar Produto
+    Criar Carrinho Novo Com Produto Existente
+    Cadastrar Carrinho
+    Tentar excluir produto vinculado a carrinho
+    Validar status code 400 e mensagem de produto em carrinho

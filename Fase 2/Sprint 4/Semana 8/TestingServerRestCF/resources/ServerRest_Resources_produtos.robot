@@ -3,6 +3,7 @@ Resource    ServerRest_Resources.robot
 
 *** Variables ***
 ${BODY_PRODUTO}    ${EMPTY}
+${BODY_CARRINHO}    ${EMPTY}
 
 *** Keywords ***
 Cadastrar Usuario Comum
@@ -59,3 +60,19 @@ Validar status code 400 e mensagem de erro de preco invalido
 Validar status code 401 e mensagem de token ausente
     Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    401
     Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    message    Token de acesso ausente, inválido, expirado ou usuário do token não existe mais
+
+Criar Carrinho Novo Com Produto Existente
+    ${produto_dict}    Create Dictionary    idProduto=${ID_PRODUTO}    quantidade=2
+    ${lista_produtos}    Create List    ${produto_dict}
+    ${body}    Create Dictionary    produtos=${lista_produtos}
+    Set Test Variable    ${BODY_CARRINHO}    ${body}
+
+Tentar excluir produto vinculado a carrinho
+    ${headers}    Create Dictionary    Authorization=${TOKEN}
+    ${resposta_errada}    DELETE On Session
+    ...    alias=CompassServerRest    url=produtos/${ID_PRODUTO}    headers=${headers}    expected_status=any
+    Set Test Variable    ${RESPOSTA_ERRO}    ${resposta_errada}
+
+Validar status code 400 e mensagem de produto em carrinho
+    Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    400
+    Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    message    Não é permitido excluir produto que faz parte de carrinho

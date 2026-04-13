@@ -69,3 +69,19 @@ CT-05 Validar fluxo de Conclusão de Compra e baixa de estoque
     Cadastrar Carrinho
     Concluir a compra do carrinho
     Validar status code 200 e exclusao bem sucedida
+
+CT-06 Validar fluxo de Cancelamento de Compra e devolucao ao estoque
+    [Documentation]    Garantir que ao cancelar a compra, o carrinho seja excluído e produtos retornem ao estoque.
+    ...                Resultado esperado: Status 200 OK.
+    [Tags]    carrinho    lifecycle    delete
+
+    Criar Sessão na ServerRest
+    Criar Usuario Novo Aleatorio
+    Cadastrar Usuario ADM
+    Realizar Login
+    Criar Produto Novo
+    Cadastrar Produto
+    Criar Carrinho Novo
+    Cadastrar Carrinho
+    Cancelar a compra do carrinho
+    Validar status code 200 e exclusao bem sucedida     ##bug na documentação já documentado
