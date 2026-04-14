@@ -90,6 +90,7 @@ Validar status code 401 e mensagem de token ausente
 Validar status code 200 e exclusao bem sucedida
     Should Be Equal As Integers    ${RESPOSTA.status_code}    200
     ...    msg=Happy Path: DELETE /carrinhos/concluir-compra ou /cancelar-compra deve retornar status 200 ao finalizar operação
+    Log    Resposta recebida: ${RESPOSTA.json()}    
     Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA.json()}    message    Registro excluído com sucesso
     ...    msg=Regra de negócio: API deve confirmar exclusão do carrinho após conclusão ou cancelamento da compra
 
@@ -98,3 +99,32 @@ Cancelar a compra do carrinho
     ${resposta}    DELETE On Session
     ...    alias=CompassServerRest    url=carrinhos/cancelar-compra    headers=${headers}
     Set Test Variable    ${RESPOSTA}    ${resposta}
+
+Tentar cadastrar carrinho com quantidade zero
+    ${produto}    Create Dictionary    idProduto=${ID_PRODUTO}    quantidade=0
+    ${lista_produtos}    Create List    ${produto}
+    ${body}    Create Dictionary    produtos=${lista_produtos}
+    ${headers}    Create Dictionary    Authorization=${TOKEN}
+    ${resposta_errada}    POST On Session
+    ...    alias=CompassServerRest    url=carrinhos    json=${body}    headers=${headers}    expected_status=any
+    Set Test Variable    ${RESPOSTA_ERRO}    ${resposta_errada}
+
+Validar status code 400 e mensagem de quantidade invalida
+    Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    400
+    ...    msg=Sad Path: POST /carrinhos deve retornar status 400 ao tentar adicionar produto com quantidade zero (validação de dados)
+    Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    message    Produto não possui quantidade suficiente
+    ...    msg=Regra de negócio: Quantidade de produtos no carrinho deve ser maior que zero
+
+Tentar cadastrar carrinho com lista de produtos vazia
+    ${lista_produtos}    Create List
+    ${body}    Create Dictionary    produtos=${lista_produtos}
+    ${headers}    Create Dictionary    Authorization=${TOKEN}
+    ${resposta_errada}    POST On Session
+    ...    alias=CompassServerRest    url=carrinhos    json=${body}    headers=${headers}    expected_status=any
+    Set Test Variable    ${RESPOSTA_ERRO}    ${resposta_errada}
+
+Validar status code 400 e mensagem de carrinho vazio
+    Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    400
+    ...    msg=Sad Path: POST /carrinhos deve retornar status 400 ao tentar criar carrinho sem produtos (validação de estrutura)
+    Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    message    Carrinho inválido
+    ...    msg=Regra de negócio: Carrinho deve conter pelo menos um produto

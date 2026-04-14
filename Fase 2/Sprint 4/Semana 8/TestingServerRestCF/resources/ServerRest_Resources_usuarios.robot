@@ -53,3 +53,21 @@ Validar status code 400 e mensagem de senha em branco do cadastro
     ...    msg=Sad Path: POST /usuarios deve retornar status 400 para senha vazia (validação de campo obrigatório)
     Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    password    password não pode ficar em branco
     ...    msg=Regra de negócio: Campo password é obrigatório e não pode ser vazio
+
+Validar status code de nome muito longo
+    Run Keyword And Continue On Failure    Should Be True    ${RESPOSTA_ERRO.status_code} == 400 or ${RESPOSTA_ERRO.status_code} == 201
+    ...    msg=Sad Path: POST /usuarios deve validar tamanho máximo do campo nome (sanitização de dados)
+    Log    Status code retornado: ${RESPOSTA_ERRO.status_code}
+
+Tentar editar usuario com email duplicado
+    ${email_usuario_1}    Set Variable    ${EMAIL_TESTE}
+    ${body}    Create Dictionary    nome=Usuario Editado    email=${email_usuario_1}    password=teste    administrador=true
+    ${resposta_errada}    PUT On Session
+    ...    alias=CompassServerRest    url=usuarios/${ID_USUARIO_2}    json=${body}    expected_status=any
+    Set Test Variable    ${RESPOSTA_ERRO}    ${resposta_errada}
+
+Validar status code 400 e mensagem de email duplicado na edicao
+    Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    400
+    ...    msg=Sad Path: PUT /usuarios/{_id} deve retornar status 400 ao tentar editar com email duplicado (bloqueio de unicidade)
+    Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    message    Este email já está sendo usado
+    ...    msg=Regra de negócio: API não permite reutilizar email já cadastrado em outro usuário

@@ -85,3 +85,27 @@ Validar status code 400 e mensagem de campos obrigatorios
     ...    msg=Contrato da API: Resposta de erro deve indicar que campo email é obrigatório
     Dictionary Should Contain Key    ${RESPOSTA_ERRO.json()}    password
     ...    msg=Contrato da API: Resposta de erro deve indicar que campo password é obrigatório
+
+Tentar realizar login com email muito longo
+    Criar Sessão na ServerRest
+    ${email_longo}    Evaluate    'a' * 500 + '@teste.com'
+    ${body}    Create Dictionary    email=${email_longo}    password=teste
+    ${resposta_errada}    POST On Session
+    ...    alias=CompassServerRest    url=login    json=${body}    expected_status=any
+    Set Test Variable    ${RESPOSTA_ERRO}    ${resposta_errada}
+
+Validar status code de email muito longo
+    Run Keyword And Continue On Failure    Should Be True    ${RESPOSTA_ERRO.status_code} == 400 or ${RESPOSTA_ERRO.status_code} == 401
+    ...    msg=Sad Path: POST /login deve retornar status 400 ou 401 para email muito longo (validação de tamanho)
+    Log    Status code retornado: ${RESPOSTA_ERRO.status_code}
+
+Tentar realizar login com email contendo SQL injection
+    ${body}    Create Dictionary    email=admin' OR '1'='1    password=teste
+    ${resposta_errada}    POST On Session
+    ...    alias=CompassServerRest    url=login    json=${body}    expected_status=any
+    Set Test Variable    ${RESPOSTA_ERRO}    ${resposta_errada}
+
+Validar status code de rejeicao de SQL injection
+    Run Keyword And Continue On Failure    Should Be True    ${RESPOSTA_ERRO.status_code} == 400 or ${RESPOSTA_ERRO.status_code} == 401
+    ...    msg=Sad Path: POST /login deve rejeitar tentativas de SQL injection (proteção de segurança)
+    Log    Status code retornado: ${RESPOSTA_ERRO.status_code}

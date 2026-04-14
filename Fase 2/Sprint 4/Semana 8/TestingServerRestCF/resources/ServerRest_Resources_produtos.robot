@@ -86,3 +86,35 @@ Validar status code 400 e mensagem de produto em carrinho
     ...    msg=Sad Path: DELETE /produtos/{_id} deve retornar status 400 ao tentar excluir produto vinculado a carrinho (proteção de integridade)
     Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    message    Não é permitido excluir produto que faz parte de carrinho
     ...    msg=Regra de negócio: API bloqueia exclusão de produtos que estão em carrinhos ativos
+
+Criar Payload de Produto com quantidade negativa
+    Gerar Nome Produto Aleatorio
+    ${body}    Create Dictionary    nome=${NOME_PRODUTO}    preco=${250}    descricao=Teclado    quantidade=${-10}
+    Set Test Variable    ${BODY_PRODUTO}    ${body}
+
+Tentar cadastrar produto com quantidade negativa
+    ${headers}    Create Dictionary    Authorization=${TOKEN}
+    ${resposta_errada}    POST On Session
+    ...    alias=CompassServerRest    url=produtos    json=${BODY_PRODUTO}    headers=${headers}    expected_status=any
+    Set Test Variable    ${RESPOSTA_ERRO}    ${resposta_errada}
+
+Validar status code 400 e mensagem de erro de quantidade invalida
+    Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    400
+    ...    msg=Sad Path: POST /produtos deve retornar status 400 para quantidade negativa (sanitização de dados)
+    Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    quantidade    quantidade deve ser um número positivo
+    ...    msg=Regra de negócio: Campo quantidade deve ser um número inteiro maior ou igual a 0
+
+Tentar editar produto com nome duplicado
+    ${headers}    Create Dictionary    Authorization=${TOKEN}
+    ${nome_produto_1}    Set Variable    ${NOME_PRODUTO}
+    Gerar Nome Produto Aleatorio
+    ${body}    Create Dictionary    nome=${nome_produto_1}    preco=300    descricao=Produto Editado    quantidade=150
+    ${resposta_errada}    PUT On Session
+    ...    alias=CompassServerRest    url=produtos/${ID_PRODUTO_2}    json=${body}    headers=${headers}    expected_status=any
+    Set Test Variable    ${RESPOSTA_ERRO}    ${resposta_errada}
+
+Validar status code 400 e mensagem de produto duplicado na edicao
+    Should Be Equal As Integers    ${RESPOSTA_ERRO.status_code}    400
+    ...    msg=Sad Path: PUT /produtos/{_id} deve retornar status 400 ao tentar editar com nome duplicado (bloqueio de unicidade)
+    Run Keyword And Continue On Failure    Dictionary Should Contain Item    ${RESPOSTA_ERRO.json()}    message    Já existe produto com esse nome
+    ...    msg=Regra de negócio: API não permite reutilizar nome já cadastrado em outro produto

@@ -53,3 +53,20 @@ CT-04 Validar contrato de entrada com payload vazio ou incompleto
 
     Tentar realizar login com payload vazio
     Validar status code 400 e mensagem de campos obrigatorios
+
+CT-05 Validar comportamento com email muito longo
+    [Documentation]    Verificar se a API valida o tamanho máximo do campo email.
+    ...                Resultado esperado: Status 400 Bad Request ou 401 Unauthorized.
+    [Tags]    login    data    errors    bug
+
+    Tentar realizar login com email muito longo
+    Validar status code de email muito longo
+
+CT-06 Validar sanitizacao com caracteres especiais no email
+    [Documentation]    Verificar se a API valida corretamente emails com caracteres especiais ou tentativas de SQL injection.
+    ...                Resultado esperado: Status 401 ou 400 Bad Request.
+    [Tags]    login    data    seguranca    
+
+    Criar Sessão na ServerRest
+    Tentar realizar login com email contendo SQL injection
+    Validar status code de rejeicao de SQL injection

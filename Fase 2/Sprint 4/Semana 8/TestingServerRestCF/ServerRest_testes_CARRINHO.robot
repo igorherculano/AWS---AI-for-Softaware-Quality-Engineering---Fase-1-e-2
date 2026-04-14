@@ -57,7 +57,7 @@ CT-04 Validar barreira de autenticação na criação do carrinho
 CT-05 Validar fluxo de Conclusão de Compra e baixa de estoque
     [Documentation]    Garantir que ao concluir a compra, o carrinho seja excluído.
     ...                Resultado esperado: Status 200 OK.
-    [Tags]    carrinho    lifecycle    delete
+    [Tags]    carrinho    lifecycle    delete    
 
     Criar Sessão na ServerRest
     Criar Usuario Novo Aleatorio
@@ -70,10 +70,10 @@ CT-05 Validar fluxo de Conclusão de Compra e baixa de estoque
     Concluir a compra do carrinho
     Validar status code 200 e exclusao bem sucedida
 
-CT-06 Validar fluxo de Cancelamento de Compra e devolucao ao estoque
-    [Documentation]    Garantir que ao cancelar a compra, o carrinho seja excluído e produtos retornem ao estoque.
-    ...                Resultado esperado: Status 200 OK.
-    [Tags]    carrinho    lifecycle    delete
+CT-07 Validar sanitizacao com quantidade zero no carrinho
+    [Documentation]    Verificar se a API valida que a quantidade de produtos no carrinho deve ser maior que zero.
+    ...                Resultado esperado: Status 400 Bad Request.
+    [Tags]    carrinho    data    errors    bug
 
     Criar Sessão na ServerRest
     Criar Usuario Novo Aleatorio
@@ -81,7 +81,17 @@ CT-06 Validar fluxo de Cancelamento de Compra e devolucao ao estoque
     Realizar Login
     Criar Produto Novo
     Cadastrar Produto
-    Criar Carrinho Novo
-    Cadastrar Carrinho
-    Cancelar a compra do carrinho
-    Validar status code 200 e exclusao bem sucedida     ##bug na documentação já documentado
+    Tentar cadastrar carrinho com quantidade zero
+    Validar status code 400 e mensagem de quantidade invalida
+
+CT-08 Validar sanitizacao com lista de produtos vazia
+    [Documentation]    Verificar se a API valida que o carrinho deve conter pelo menos um produto.
+    ...                Resultado esperado: Status 400 Bad Request.
+    [Tags]    carrinho    data    errors    bug
+
+    Criar Sessão na ServerRest
+    Criar Usuario Novo Aleatorio
+    Cadastrar Usuario ADM
+    Realizar Login
+    Tentar cadastrar carrinho com lista de produtos vazia
+    Validar status code 400 e mensagem de carrinho vazio

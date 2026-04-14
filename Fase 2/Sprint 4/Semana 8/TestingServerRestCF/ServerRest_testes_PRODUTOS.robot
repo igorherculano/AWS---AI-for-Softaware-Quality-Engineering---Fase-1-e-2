@@ -83,3 +83,33 @@ CT-06 Validar bloqueio de exclusao de produto vinculado a carrinho
     Cadastrar Carrinho
     Tentar excluir produto vinculado a carrinho
     Validar status code 400 e mensagem de produto em carrinho
+
+CT-07 Validar sanitizacao de dados com quantidade negativa
+    [Documentation]    A API não deve permitir o cadastro de produtos com quantidade negativa.
+    ...                Resultado esperado: Status 400 Bad Request.
+    [Tags]    produto    data    errors    bug
+
+    Criar Sessão na ServerRest
+    Criar Usuario Novo Aleatorio
+    Cadastrar Usuario ADM
+    Realizar Login
+    Criar Payload de Produto com quantidade negativa
+    Tentar cadastrar produto com quantidade negativa
+    Validar status code 400 e mensagem de erro de quantidade invalida   ##bug mapeado
+
+CT-08 Validar bloqueio de duplicidade ao editar produto com nome existente
+    [Documentation]    Garantir que a API não permita editar um produto alterando seu nome para um que já existe.
+    ...                Resultado esperado: Status 400 Bad Request.
+    [Tags]    produto    business_rule    data    bug
+
+    Criar Sessão na ServerRest
+    Criar Usuario Novo Aleatorio
+    Cadastrar Usuario ADM
+    Realizar Login
+    Criar Produto Novo
+    Cadastrar Produto
+    Set Suite Variable    ${ID_PRODUTO_1}    ${ID_PRODUTO}
+    Criar Produto Novo
+    Cadastrar Produto
+    Set Suite Variable    ${ID_PRODUTO_2}    ${ID_PRODUTO}
+    Tentar editar produto com nome duplicado

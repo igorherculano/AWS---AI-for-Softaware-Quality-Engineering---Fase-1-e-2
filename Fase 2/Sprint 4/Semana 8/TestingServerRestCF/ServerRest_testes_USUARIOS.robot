@@ -53,3 +53,19 @@ CT-05 Validar fluxo funcional (CRUD) do modulo de Usuarios
     Listar Usuario e verificar se deu certo
     Editar Usuario
     Excluir Usuario
+
+
+CT-07 Validar bloqueio de duplicidade ao editar usuario com email existente
+    [Documentation]    Garantir que a API não permita editar um usuário alterando seu email para um que já existe.
+    ...                Resultado esperado: Status 400 Bad Request.
+    [Tags]    usuarios    business_rule    data    bug
+
+    Criar Sessão na ServerRest
+    Criar Usuario Novo Aleatorio
+    Cadastrar Usuario ADM
+    Set Suite Variable    ${ID_USUARIO_1}    ${RESPOSTA}[_id]
+    Criar Usuario Novo Aleatorio
+    Cadastrar Usuario ADM
+    Set Suite Variable    ${ID_USUARIO_2}    ${RESPOSTA}[_id]
+    Tentar editar usuario com email duplicado
+    Validar status code 400 e mensagem de email duplicado na edicao
