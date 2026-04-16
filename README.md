@@ -205,18 +205,15 @@ Consulte `.amazonq/rules/` para:
 
 ## 🎯 Critérios de Sucesso
 
-✅ 100% dos casos de teste planejados executados  
-✅ Taxa mínima de 95% de aprovação  
-✅ 100% de aprovação em Happy Path e Sad Path  
-✅ Zero bugs críticos/altos abertos  
+✅ 100% dos casos de teste planejados executados   
+✅ 100% de cobertura em Happy Path e Sad Path   
 ✅ Relatórios finais gerados (report.html, log.html)
 
 ---
 
 ## 👥 Autores
 
-Desenvolvido como parte do **Programa de Bolsas - AWS & AI for Software Quality Engineering**.
-
+Igor Herculano Silva e colegas participantes do **Programa de Bolsas - AWS & AI for Software Quality Engineering**
 ---
 
 ## 📄 Licença
@@ -228,3 +225,4 @@ Este repositório é destinado a fins educacionais.
 ## 📞 Suporte
 
 Para dúvidas ou sugestões, consulte a documentação em `.amazonq/rules/` ou abra uma issue no repositório.
+
